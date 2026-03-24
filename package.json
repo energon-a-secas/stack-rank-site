@@ -1,0 +1,15 @@
+{
+  "name": "stack-rank-site",
+  "version": "1.0.0",
+  "description": "Drag-and-drop priority lists with URL sharing",
+  "main": "index.html",
+  "scripts": {
+    "dev": "convex dev"
+  },
+  "keywords": ["priority", "drag-and-drop", "kanban", "collaborative"],
+  "author": "Neorgon",
+  "license": "MIT",
+  "dependencies": {
+    "convex": "^1.21.0"
+  }
+}

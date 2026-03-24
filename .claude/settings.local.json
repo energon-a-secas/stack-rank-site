@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/lucianoadonisvillarroel/Documents/Projects/Personal/stack-rank-site/vendor)",
+      "Bash(cp /Users/lucianoadonisvillarroel/Documents/Projects/Personal/stack-rank-site/node_modules/convex/dist/browser.bundle.js /Users/lucianoadonisvillarroel/Documents/Projects/Personal/stack-rank-site/vendor/convex.js)",
+      "Bash(npx convex:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
+}

@@ -1,0 +1,39 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: "#0f172a"
+    primaryTextColor: "#e2e8f0"
+    primaryBorderColor: "#0063e5"
+    lineColor: "#38bdf8"
+    secondaryColor: "#1e293b"
+    tertiaryColor: "#1e293b"
+    clusterBkg: "#f0f7ff"
+    clusterBorder: "#bfdbfe"
+    edgeLabelBackground: "#e8f0ff"
+    mainBkg: "#0f172a"
+    nodeBorder: "#0063e5"
+    titleColor: "#1e1b4b"
+    fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif"
+    fontSize: "13px"
+---
+flowchart TB
+    User([User]) --> HTML["index.html\nApp shell"]
+
+    subgraph Frontend["Frontend (ES Modules)"]
+        HTML --> app["app.js\nEntry point"]
+        app --> state["state.js\nShared state + localStorage"]
+        app --> render["render.js\nDOM rendering + SortableJS"]
+        app --> events["events.js\nUser interactions"]
+        app --> data["data.js\nConvex client wrapper"]
+        app --> utils["utils.js\nHelpers (toast, clipboard)"]
+    end
+
+    subgraph Convex["Convex Backend"]
+        data -->|"queries/mutations"| lists["lists.ts\nCRUD operations"]
+        lists --> DB[("Database\nlists table")]
+    end
+
+    state <-->|"storage-key: stack-rank-state"| Storage[("localStorage\nCache + offline")]
+    User -->|"edits at /:listId"| HTML
+    User -->|"shares URL"| Clipboard[("Clipboard\nURL sharing")]

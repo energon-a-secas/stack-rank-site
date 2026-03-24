@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stack Rank — Shared Priority Lists</title>
+  <meta name="description" content="Drag-and-drop reorder team priorities. Share lists via URL, changes sync instantly. No signup needed.">
+  <meta property="og:title" content="Stack Rank — Shared Priority Lists">
+  <meta property="og:description" content="Reorder team priorities with drag-and-drop. Share via URL, edit collaboratively.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stackrank.neorgon.com/">
+  <meta property="og:site_name" content="Neorgon">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Stack Rank — Shared Priority Lists">
+  <meta name="twitter:description" content="Drag-and-drop reorder team priorities with URL sharing.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://stackrank.neorgon.com/">
+  <meta property="og:locale" content="en_US">
+  <meta name="theme-color" content="#040714">
+  <!-- og:image: uncomment when social preview image is ready (1200x630 PNG)
+  <meta property="og:image" content="https://stackrank.neorgon.com/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630"> -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="stylesheet" href="css/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Stack Rank",
+    "description": "Drag-and-drop priority lists that sync to URLs. Share and collaborate on team priorities with no signup required.",
+    "url": "https://stackrank.neorgon.com/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Neorgon", "url": "https://neorgon.com/" }
+  }
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="header-bar">
+    <div class="header-logo">
+      <a href="https://ehq.cl/" target="_blank" rel="noopener noreferrer">
+        <img src="energon-classic-logo.png" class="header-logo-img" alt="Logo">
+      </a>
+      <a href="./" class="header-title-link">
+        <h1>Stack Rank</h1>
+        <div class="header-subtitle">Shared priority lists</div>
+      </a>
+    </div>
+
+    <a class="header-home" href="https://neorgon.com/" title="neorgon.com" aria-label="Neorgon home">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+    </a>
+  </header>
+
+  <main id="main">
+    <div class="container">
+      <div class="toolbar">
+        <div class="list-title-wrapper">
+          <h2 id="listTitle" contenteditable="true" class="list-title">New Priority List</h2>
+        </div>
+        <div class="toolbar-actions">
+          <button id="addItemBtn" class="btn btn-primary">Add Item</button>
+          <button id="shareBtn" class="btn btn-secondary">Share</button>
+          <button id="templateBtn" class="btn btn-secondary">Templates</button>
+        </div>
+      </div>
+
+      <div class="url-display" id="urlDisplay" style="display: none;">
+        <div class="url-display-content">
+          <input type="text" id="shareUrl" readonly>
+          <button id="copyUrlBtn" class="btn btn-small">Copy</button>
+        </div>
+      </div>
+
+      <div id="itemList" class="item-list">
+        <!-- Items will be rendered here -->
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-content">
+          <h3>No items yet</h3>
+          <p>Add your first priority item to get started</p>
+          <button id="addFirstItemBtn" class="btn btn-primary">Add First Item</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add Item</h3>
+        <button id="closeModalBtn" class="modal-close">&times;</button>
+      </div>
+      <form id="itemForm">
+        <div class="form-group">
+          <label for="itemText">Text *</label>
+          <input type="text" id="itemText" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label for="itemPriority">Priority</label>
+          <select id="itemPriority">
+            <option value="P1">P1 - Critical</option>
+            <option value="P2">P2 - High</option>
+            <option value="P3" selected>P3 - Medium</option>
+            <option value="P4">P4 - Normal</option>
+            <option value="P5">P5 - Low</option>
+            <option value="P6">P6 - Optional</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="itemTags">Tags (comma-separated)</label>
+          <input type="text" id="itemTags" placeholder="e.g., urgent, design, review">
+        </div>
+        <div class="form-group">
+          <label for="itemNotes">Notes</label>
+          <textarea id="itemNotes" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <div class="color-picker">
+            <button type="button" class="color-option active" data-color="#f97316" style="background: #f97316;"></button>
+            <button type="button" class="color-option" data-color="#3b82f6" style="background: #3b82f6;"></button>
+            <button type="button" class="color-option" data-color="#8b5cf6" style="background: #8b5cf6;"></button>
+            <button type="button" class="color-option" data-color="#ec4899" style="background: #ec4899;"></button>
+            <button type="button" class="color-option" data-color="#10b981" style="background: #10b981;"></button>
+            <button type="button" class="color-option" data-color="#f59e0b" style="background: #f59e0b;"></button>
+            <button type="button" class="color-option" data-color="#ef4444" style="background: #ef4444;"></button>
+            <button type="button" class="color-option" data-color="#06b6d4" style="background: #06b6d4;"></button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancelItemBtn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="templateModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Choose Template</h3>
+        <button id="closeTemplateModalBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="template-grid">
+        <div class="template-card" data-template="shopping">
+          <h4>Shopping List</h4>
+          <p>Groceries and household items</p>
+        </div>
+        <div class="template-card" data-template="team">
+          <h4>Team Priorities</h4>
+          <p>Sprint goals and tasks</p>
+        </div>
+        <div class="template-card" data-template="reminder">
+          <h4>Reminders</h4>
+          <p>Important dates and tasks</p>
+        </div>
+        <div class="template-card" data-template="project">
+          <h4>Project Steps</h4>
+          <p>Milestones and deliverables</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="info-footer">
+    Part of <a class="footer-link" href="https://neorgon.com/">Neorgon</a>
+  </footer>
+
+  <script>
+    // Inject Convex URL for browser access
+    window.CONVEX_URL = 'https://industrious-hare-401.convex.cloud';
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script type="module">
+    // Load and expose Convex client before app initialization
+    import('https://esm.run/convex@1.21.0/browser').then(mod => {
+      window.ConvexHttpClient = mod.ConvexHttpClient;
+    }).catch(err => {
+      console.error('Failed to load Convex:', err);
+    });
+  </script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
