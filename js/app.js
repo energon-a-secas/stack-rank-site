@@ -28,23 +28,31 @@ async function loadListFromHash() {
 
 async function init() {
   try {
+    console.log('[App] Starting initialization...');
     await utils.loadConvexClient();
+    console.log('[App] Convex client loaded');
 
     // Check for hash in URL
     const hash = window.location.hash.slice(1);
     const urlListId = hash.split('/').filter(Boolean)[0];
+    console.log('[App] Hash:', hash, '| Extracted ID:', urlListId);
 
     if (urlListId) {
       state.currentListId = urlListId;
+      console.log('[App] Loading list:', urlListId);
       const list = await data.getList(urlListId);
       if (list) {
+        console.log('[App] List found in DB:', list);
         loadFromBackend(list);
       } else {
+        console.log('[App] List not found, creating new list with ID:', urlListId);
         await createNewList(urlListId);
       }
     } else {
+      console.log('[App] No hash, creating new list');
       await createNewList();
       window.location.hash = `#/${state.currentListId}/`;
+      console.log('[App] Set hash to:', state.currentListId);
     }
 
     loadFromLocalStorage();
@@ -55,8 +63,11 @@ async function init() {
     // Listen for hash changes (back/forward navigation)
     window.addEventListener('hashchange', loadListFromHash);
 
+    console.log('[App] Initialization complete');
+    utils.showToast('List loaded successfully');
+
   } catch (error) {
-    console.error('Failed to initialize app:', error);
+    console.error('[App] Failed to initialize:', error);
     utils.showToast('Failed to load list', 'error');
   }
 }

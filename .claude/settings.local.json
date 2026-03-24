@@ -7,7 +7,8 @@
       "Bash(chmod:*)",
       "Bash(xargs kill:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8828/test123/)",
-      "Bash(curl -s http://localhost:8828/)"
+      "Bash(curl -s http://localhost:8828/)",
+      "Bash(curl -I \"http://localhost:8828/test-hash.html#/w37e97wpsg/\")"
     ]
   },
   "enableAllProjectMcpServers": true,

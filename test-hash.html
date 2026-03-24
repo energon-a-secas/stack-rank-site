@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hash Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+    .log { margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 4px; }
+    .error { background: #4a1a1a; }
+    button { padding: 10px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Hash Routing Test</h1>
+  <div id="logs"></div>
+  <hr>
+  <button onclick="testHash()">Test Current Hash</button>
+  <button onclick="window.location.hash = '#/test123/'">Go to #/test123/</button>
+  <button onclick="window.location.hash = '#/abc456/'">Go to #/abc456/</button>
+
+  <script>
+    function log(msg, isError = false) {
+      const div = document.createElement('div');
+      div.className = 'log' + (isError ? ' error' : '');
+      div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+      document.getElementById('logs').appendChild(div);
+      console.log(msg);
+    }
+
+    function testHash() {
+      const hash = window.location.hash;
+      log('Full hash: "' + hash + '"');
+
+      const cleaned = hash.slice(1);
+      log('After slice(1): "' + cleaned + '"');
+
+      const parts = cleaned.split('/');
+      log('Split by /: [' + parts.join(', ') + ']');
+
+      const filtered = parts.filter(Boolean);
+      log('After filter(Boolean): [' + filtered.join(', ') + ']');
+
+      const id = filtered[0];
+      log('Extracted ID: "' + id + '"');
+    }
+
+    // Test on load
+    document.addEventListener('DOMContentLoaded', () => {
+      log('Page loaded');
+      testHash();
+    });
+
+    // Test on hash change
+    window.addEventListener('hashchange', () => {
+      log('Hash changed!');
+      testHash();
+    });
+  </script>
+</body>
+</html>
