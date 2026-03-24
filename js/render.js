@@ -77,7 +77,7 @@ export function renderUrlDisplay() {
   const urlDisplayEl = document.getElementById('urlDisplay');
   const shareUrlEl = document.getElementById('shareUrl');
 
-  const url = `${window.location.origin}/${state.currentListId}/`;
+  const url = `${window.location.origin}/#/${state.currentListId}/`;
   shareUrlEl.value = url;
   urlDisplayEl.style.display = 'block';
 }

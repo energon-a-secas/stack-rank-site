@@ -12,8 +12,9 @@ async function init() {
   try {
     await utils.loadConvexClient();
 
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const urlListId = pathParts[0];
+    // Use hash-based routing for GitHub Pages compatibility
+    const hash = window.location.hash.slice(1); // Remove leading #
+    const urlListId = hash.split('/').filter(Boolean)[0];
 
     if (urlListId) {
       state.currentListId = urlListId;
@@ -25,7 +26,7 @@ async function init() {
       }
     } else {
       await createNewList();
-      history.replaceState(null, '', `/${state.currentListId}/`);
+      window.location.hash = `#/${state.currentListId}/`;
     }
 
     loadFromLocalStorage();
