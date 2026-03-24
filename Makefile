@@ -14,7 +14,7 @@ help:
 .PHONY: serve
 serve:
 	@echo "Serving → http://localhost:$(PORT)"
-	@python3 -m http.server $(PORT)
+	@python3 server.py
 
 # ── Kill ──────────────────────────────────────────────────────────────────────
 .PHONY: kill
