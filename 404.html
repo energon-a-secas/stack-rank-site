@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA routing workaround
+    // Capture the current path and redirect to index.html with the path preserved
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+
+    // For direct 404 access, redirect to index.html
+    sessionStorage.redirect = location.href;
+    location.replace(location.origin + '/index.html');
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>

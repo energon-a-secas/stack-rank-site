@@ -176,6 +176,15 @@
   </footer>
 
   <script>
+    // GitHub Pages SPA routing workaround - restore URL from 404.html redirect
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+
     // Inject Convex URL for browser access
     window.CONVEX_URL = 'https://industrious-hare-401.convex.cloud';
   </script>
