@@ -8,12 +8,30 @@ import * as events from './events.js';
 import * as data from './data.js';
 import * as utils from './utils.js';
 
+async function loadListFromHash() {
+  // Use hash-based routing for GitHub Pages compatibility
+  const hash = window.location.hash.slice(1); // Remove leading #
+  const urlListId = hash.split('/').filter(Boolean)[0];
+
+  if (urlListId && urlListId !== state.currentListId) {
+    state.currentListId = urlListId;
+    const list = await data.getList(urlListId);
+    if (list) {
+      loadFromBackend(list);
+    } else {
+      await createNewList(urlListId);
+    }
+    loadFromLocalStorage();
+    render.renderList();
+  }
+}
+
 async function init() {
   try {
     await utils.loadConvexClient();
 
-    // Use hash-based routing for GitHub Pages compatibility
-    const hash = window.location.hash.slice(1); // Remove leading #
+    // Check for hash in URL
+    const hash = window.location.hash.slice(1);
     const urlListId = hash.split('/').filter(Boolean)[0];
 
     if (urlListId) {
@@ -33,6 +51,9 @@ async function init() {
 
     render.init();
     events.init();
+
+    // Listen for hash changes (back/forward navigation)
+    window.addEventListener('hashchange', loadListFromHash);
 
   } catch (error) {
     console.error('Failed to initialize app:', error);

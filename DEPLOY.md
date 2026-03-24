@@ -16,7 +16,7 @@ Visit `http://localhost:8828/` to test locally.
 
 ## GitHub Pages
 
-The site uses a `404.html` workaround to support client-side routing on GitHub Pages.
+The site uses **hash-based routing** (`#/listId/`) which works perfectly with GitHub Pages without any server configuration.
 
 **Setup:**
 1. Push to GitHub
@@ -25,10 +25,10 @@ The site uses a `404.html` workaround to support client-side routing on GitHub P
 4. Site will be available at `https://yourusername.github.io/stack-rank-site/`
 
 **How it works:**
-- When GitHub Pages encounters `/w37e97wpsg/`, it serves `404.html`
-- `404.html` redirects to `index.html` while preserving the path in `sessionStorage`
-- `index.html` restores the path from `sessionStorage`
-- JavaScript routing takes over
+- URLs use format: `https://stackrank.neorgon.com/#/w37e97wpsg/`
+- Everything after `#` is client-side only (not sent to server)
+- Works in all browsers, no 404 errors
+- Shareable and works across new tabs
 
 ## Netlify
 
@@ -76,9 +76,6 @@ Update this to your production Convex deployment URL.
 
 After deploying, test these URLs:
 - Base: `https://your-domain.com/` ✅
-- List: `https://your-domain.com/abc123xyz/` ✅ (should load and show the list)
+- List: `https://your-domain.com/#/abc123xyz/` ✅ (should load and show the list)
 
-If you see a 404 or blank page, check:
-1. `404.html` is deployed
-2. `index.html` has the sessionStorage restore script
-3. Convex client is loading correctly (check browser console)
+Hash-based routing works everywhere with zero configuration!
