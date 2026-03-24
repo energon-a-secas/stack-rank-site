@@ -44,6 +44,7 @@ async function init() {
       if (list) {
         console.log('[App] List found in DB:', list);
         loadFromBackend(list);
+        console.log('[App] State after loadFromBackend:', state.list);
       } else {
         console.log('[App] List not found, creating new list with ID:', urlListId);
         await createNewList(urlListId);
@@ -55,7 +56,8 @@ async function init() {
       console.log('[App] Set hash to:', state.currentListId);
     }
 
-    loadFromLocalStorage();
+    // Don't load from localStorage when loading from backend - it might have stale data
+    // loadFromLocalStorage();
 
     render.init();
     events.init();

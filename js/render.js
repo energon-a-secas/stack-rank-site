@@ -19,15 +19,19 @@ export function init() {
 }
 
 export function renderList() {
+  console.log('[Render] renderList called, state:', state.list);
   const titleEl = document.getElementById('listTitle');
   const itemListEl = document.getElementById('itemList');
   const emptyStateEl = document.getElementById('emptyState');
 
   titleEl.textContent = state.list.title;
+  console.log('[Render] Title set to:', state.list.title);
+  console.log('[Render] Items count:', state.list.items.length);
 
   if (state.list.items.length === 0) {
     itemListEl.classList.add('hidden');
     emptyStateEl.classList.remove('hidden');
+    console.log('[Render] Showing empty state');
     return;
   }
 
