@@ -178,10 +178,14 @@
   <script>
     // GitHub Pages SPA routing workaround - restore URL from 404.html redirect
     (function() {
-      var redirect = sessionStorage.redirect;
-      delete sessionStorage.redirect;
-      if (redirect && redirect != location.href) {
-        history.replaceState(null, null, redirect);
+      // Check if we were redirected from 404.html with a path parameter
+      var params = new URLSearchParams(window.location.search);
+      var redirectPath = params.get('p');
+
+      if (redirectPath) {
+        // Remove the ?p= parameter and restore the clean path
+        var cleanUrl = window.location.origin + redirectPath;
+        history.replaceState(null, null, cleanUrl);
       }
     })();
 
