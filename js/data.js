@@ -25,11 +25,17 @@ export async function createList(listId, listData) {
     const client = getConvexClient();
     if (!client) return null;
 
+    // Strip out UI-only fields (prevIndex) before saving to backend
+    const cleanItems = listData.items.map(item => {
+      const { prevIndex, ...cleanItem } = item;
+      return cleanItem;
+    });
+
     // Call Convex function by name (browser-compatible)
     return await client.mutation('lists:createList', {
       listId,
       title: listData.title,
-      items: listData.items
+      items: cleanItems
     });
   } catch (error) {
     console.error('Failed to create list:', error);
@@ -42,10 +48,19 @@ export async function updateList(listId, updates) {
     const client = getConvexClient();
     if (!client) return null;
 
+    // Strip out UI-only fields (prevIndex) before saving to backend
+    const cleanUpdates = { ...updates };
+    if (cleanUpdates.items) {
+      cleanUpdates.items = cleanUpdates.items.map(item => {
+        const { prevIndex, ...cleanItem } = item;
+        return cleanItem;
+      });
+    }
+
     // Call Convex function by name (browser-compatible)
     await client.mutation('lists:updateList', {
       listId,
-      ...updates
+      ...cleanUpdates
     });
   } catch (error) {
     console.error('Failed to update list:', error);
