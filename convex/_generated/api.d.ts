@@ -9,6 +9,7 @@
  */
 
 import type * as lists from "../lists.js";
+import type * as migrate from "../migrate.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   lists: typeof lists;
+  migrate: typeof migrate;
 }>;
 
 /**
