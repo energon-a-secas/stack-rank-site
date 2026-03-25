@@ -25,6 +25,7 @@ export const createList = mutation({
         priority: v.union(v.literal("P1"), v.literal("P2"), v.literal("P3"), v.literal("P4"), v.literal("P5"), v.literal("P6")),
         tags: v.array(v.string()),
         notes: v.optional(v.string()),
+        prevIndex: v.optional(v.number()),
       })
     ),
   },
@@ -54,6 +55,7 @@ export const updateList = mutation({
           priority: v.union(v.literal("P1"), v.literal("P2"), v.literal("P3"), v.literal("P4"), v.literal("P5"), v.literal("P6")),
           tags: v.array(v.string()),
           notes: v.optional(v.string()),
+          prevIndex: v.optional(v.number()),
         })
       )
     ),

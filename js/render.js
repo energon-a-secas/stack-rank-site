@@ -149,9 +149,15 @@ function setupDragAndDrop() {
       const { oldIndex, newIndex } = evt;
       if (oldIndex !== newIndex) {
         const { reorderItems } = await import('./state.js');
-        // Store the old position for rank indicator
-        state.list.items[oldIndex].prevIndex = oldIndex;
+        // Get the item's ID before reordering
+        const movedItemId = state.list.items[oldIndex].id;
+        // Reorder the items
         reorderItems(oldIndex, newIndex);
+        // Find the moved item and set its previous index
+        const movedItem = state.list.items.find(item => item.id === movedItemId);
+        if (movedItem) {
+          movedItem.prevIndex = oldIndex;
+        }
         renderList();
         saveToBackend();
       }

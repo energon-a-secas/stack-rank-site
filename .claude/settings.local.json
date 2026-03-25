@@ -11,7 +11,8 @@
       "Bash(curl -I \"http://localhost:8828/test-hash.html#/w37e97wpsg/\")",
       "Bash(CONVEX_DEPLOYMENT=dev:industrious-hare-401 npx convex deploy --yes)",
       "Bash(curl -s https://industrious-hare-401.convex.cloud/_system/cli/query_metadata)",
-      "Bash(tee /tmp/convex-deploy.log)"
+      "Bash(tee /tmp/convex-deploy.log)",
+      "Bash(curl -s \"https://stackrank.neorgon.com/js/data.js\")"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -21,6 +21,7 @@ function bindEvents() {
   document.getElementById('exportBtn').addEventListener('click', handleExport);
   document.getElementById('importBtn').addEventListener('click', handleImportClick);
   document.getElementById('importFileInput').addEventListener('change', handleImportFile);
+  document.getElementById('resetRanksBtn').addEventListener('click', handleResetRanks);
 
   document.getElementById('itemForm').addEventListener('submit', handleItemSubmit);
   document.getElementById('cancelItemBtn').addEventListener('click', closeItemModal);
@@ -218,6 +219,26 @@ async function handleImportFile(e) {
     console.error('Import failed:', error);
     showToast(`Failed to import: ${error.message}`, 'error');
     e.target.value = ''; // Reset file input
+  }
+}
+
+async function handleResetRanks() {
+  if (!confirm('Reset all rank indicators? This will clear the movement arrows.')) {
+    return;
+  }
+
+  try {
+    // Clear prevIndex from all items
+    state.list.items.forEach(item => {
+      delete item.prevIndex;
+    });
+
+    renderList();
+    await saveToBackend();
+    showToast('Rank indicators reset');
+  } catch (error) {
+    console.error('Reset ranks failed:', error);
+    showToast('Failed to reset ranks', 'error');
   }
 }
 
