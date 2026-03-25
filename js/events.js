@@ -18,6 +18,9 @@ function bindEvents() {
   document.getElementById('addFirstItemBtn').addEventListener('click', () => openItemModal());
   document.getElementById('shareBtn').addEventListener('click', handleShare);
   document.getElementById('templateBtn').addEventListener('click', openTemplateModal);
+  document.getElementById('exportBtn').addEventListener('click', handleExport);
+  document.getElementById('importBtn').addEventListener('click', handleImportClick);
+  document.getElementById('importFileInput').addEventListener('change', handleImportFile);
 
   document.getElementById('itemForm').addEventListener('submit', handleItemSubmit);
   document.getElementById('cancelItemBtn').addEventListener('click', closeItemModal);
@@ -133,6 +136,88 @@ function handleOutsideModalClick(e) {
     closeItemModal();
   } else if (e.target === templateModal) {
     closeTemplateModal();
+  }
+}
+
+function handleExport() {
+  try {
+    const exportData = {
+      version: 1,
+      listId: state.currentListId,
+      title: state.list.title,
+      items: state.list.items.map(item => {
+        const { prevIndex, ...cleanItem } = item;
+        return cleanItem;
+      }),
+      exportedAt: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stack-rank-${state.currentListId}-${Date.now()}.json`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+    showToast('List exported successfully');
+  } catch (error) {
+    console.error('Export failed:', error);
+    showToast('Failed to export list', 'error');
+  }
+}
+
+function handleImportClick() {
+  const fileInput = document.getElementById('importFileInput');
+  fileInput.click();
+}
+
+async function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const importData = JSON.parse(text);
+
+    // Validate import data
+    if (!importData.version || !importData.title || !Array.isArray(importData.items)) {
+      throw new Error('Invalid backup file format');
+    }
+
+    // Validate items
+    for (const item of importData.items) {
+      if (!item.id || !item.text || !item.priority || !item.color) {
+        throw new Error('Invalid item data in backup file');
+      }
+      // Check priority is valid
+      if (!['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].includes(item.priority)) {
+        throw new Error(`Invalid priority value: ${item.priority}`);
+      }
+    }
+
+    // Confirm import
+    const confirmMsg = `Import ${importData.items.length} items from "${importData.title}"?\n\nThis will replace your current list.`;
+    if (!confirm(confirmMsg)) {
+      e.target.value = ''; // Reset file input
+      return;
+    }
+
+    // Import data
+    updateTitle(importData.title);
+    state.list.items = importData.items;
+
+    renderList();
+    await saveToBackend();
+
+    showToast(`Imported ${importData.items.length} items successfully`);
+    e.target.value = ''; // Reset file input
+  } catch (error) {
+    console.error('Import failed:', error);
+    showToast(`Failed to import: ${error.message}`, 'error');
+    e.target.value = ''; // Reset file input
   }
 }
 
