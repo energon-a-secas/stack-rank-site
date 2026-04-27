@@ -26,6 +26,8 @@ export const createList = mutation({
         tags: v.array(v.string()),
         notes: v.optional(v.string()),
         prevIndex: v.optional(v.number()),
+        completedAt: v.optional(v.number()),
+        blockedMessage: v.optional(v.string()),
       })
     ),
   },
@@ -56,6 +58,8 @@ export const updateList = mutation({
           tags: v.array(v.string()),
           notes: v.optional(v.string()),
           prevIndex: v.optional(v.number()),
+          completedAt: v.optional(v.number()),
+          blockedMessage: v.optional(v.string()),
         })
       )
     ),

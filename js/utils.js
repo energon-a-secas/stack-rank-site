@@ -42,6 +42,14 @@ export function showToast(msg, type = 'info') {
   _toastTimer = setTimeout(() => el.classList.remove('visible'), 3000);
 }
 
+/** Format a timestamp for display (e.g. "Apr 27, 2:35 PM"). */
+export function formatTimestamp(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', '
+    + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
 /** Simple debounce. */
 export function debounce(fn, ms) {
   let timer;

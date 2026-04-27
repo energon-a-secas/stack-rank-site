@@ -14,6 +14,8 @@ export default defineSchema({
         tags: v.array(v.string()),
         notes: v.optional(v.string()),
         prevIndex: v.optional(v.number()),
+        completedAt: v.optional(v.number()),
+        blockedMessage: v.optional(v.string()),
       })
     ),
     createdAt: v.number(),

@@ -174,6 +174,31 @@ export function loadTemplate(templateName, s = state) {
   return false;
 }
 
+/** Mark an item as complete (or uncomplete) */
+export function toggleComplete(itemId, s = state) {
+  const item = s.list.items.find(i => i.id === itemId);
+  if (item) {
+    item.completedAt = item.completedAt ? null : Date.now();
+    if (item.completedAt) item.blockedMessage = null;
+    s.isModified = true;
+    saveToLocalStorage(s);
+    return item;
+  }
+  return null;
+}
+
+/** Set or clear a blocked message on an item */
+export function toggleBlocked(itemId, message = null, s = state) {
+  const item = s.list.items.find(i => i.id === itemId);
+  if (item) {
+    item.blockedMessage = item.blockedMessage ? null : (message || 'Blocked');
+    s.isModified = true;
+    saveToLocalStorage(s);
+    return item;
+  }
+  return null;
+}
+
 /** Update list title */
 export function updateTitle(title, s = state) {
   s.list.title = title;

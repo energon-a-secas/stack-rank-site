@@ -2,7 +2,7 @@
 // All event listeners and user interaction handlers.
 
 import { state, addItem, updateItem, updateTitle, loadTemplate, TEMPLATES } from './state.js';
-import { renderList, openItemModal, closeItemModal, openTemplateModal, closeTemplateModal, getSelectedColor, renderUrlDisplay } from './render.js';
+import { renderList, openItemModal, closeItemModal, openTemplateModal, closeTemplateModal, closeBlockModal, getSelectedColor, renderUrlDisplay } from './render.js';
 import { saveToBackend } from './render.js';
 import { showToast, copyToClipboard } from './utils.js';
 
@@ -29,6 +29,10 @@ function bindEvents() {
 
   document.getElementById('copyUrlBtn').addEventListener('click', handleCopyUrl);
   document.getElementById('closeTemplateModalBtn').addEventListener('click', closeTemplateModal);
+
+  document.getElementById('blockForm').addEventListener('submit', handleBlockSubmit);
+  document.getElementById('cancelBlockBtn').addEventListener('click', closeBlockModal);
+  document.getElementById('closeBlockModalBtn').addEventListener('click', closeBlockModal);
 
   document.querySelectorAll('.color-option').forEach(option => {
     option.addEventListener('click', handleColorClick);
@@ -72,7 +76,7 @@ async function handleItemSubmit(e) {
     return;
   }
 
-  if (!state.editingItem && state.list.items.length >= 10) {
+  if (!state.editingItem && state.list.items.filter(i => !i.completedAt).length >= 10) {
     showToast('Maximum 10 items allowed', 'error');
     return;
   }
@@ -129,14 +133,32 @@ async function handleTemplateClick(e) {
   showToast('Template loaded');
 }
 
+async function handleBlockSubmit(e) {
+  e.preventDefault();
+  const modal = document.getElementById('blockModal');
+  const itemId = modal.dataset.itemId;
+  const message = document.getElementById('blockMessage').value.trim();
+  if (!itemId || !message) return;
+
+  const { toggleBlocked } = await import('./state.js');
+  toggleBlocked(itemId, message);
+  renderList();
+  await saveToBackend();
+  closeBlockModal();
+  showToast('Item blocked');
+}
+
 function handleOutsideModalClick(e) {
   const itemModal = document.getElementById('itemModal');
   const templateModal = document.getElementById('templateModal');
+  const blockModal = document.getElementById('blockModal');
 
   if (e.target === itemModal) {
     closeItemModal();
   } else if (e.target === templateModal) {
     closeTemplateModal();
+  } else if (e.target === blockModal) {
+    closeBlockModal();
   }
 }
 
