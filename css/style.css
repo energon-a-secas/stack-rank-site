@@ -4,19 +4,19 @@
 /*
  * ── Design tokens ─────────────────────────────────────────────
  *
- *  Colors
- *  bg:                 #040714
- *  surface-1 (cards):  rgba(255,255,255,.03)
- *  surface-2 (hover):  rgba(255,255,255,.06)
- *  border-subtle:      rgba(255,255,255,.07)
- *  border:             rgba(255,255,255,.1)
- *  border-strong:      rgba(255,255,255,.22)
- *  blue accent:        #0063e5
- *  blue accent bright: #0080ff
- *  text primary:       #f9f9f9
- *  text secondary:     #cacaca
- *  text muted:         rgba(255,255,255,.55)
- *  header gradient:    in oklch 135deg, #B015B0 0%, #3D0080 50%, #040714 100%
+ *  Colors (HSL-based, violet-tinted dark mode)
+ *  bg:                 hsl(230, 35%, 7%)
+ *  surface-1 (cards):  hsla(250, 20%, 98%, .04)
+ *  surface-2 (hover):  hsla(250, 20%, 98%, .07)
+ *  border-subtle:      hsla(250, 15%, 100%, .06)
+ *  border:             hsla(250, 15%, 100%, .1)
+ *  border-strong:      hsla(250, 15%, 100%, .2)
+ *  accent:             hsl(215, 100%, 45%)
+ *  accent bright:      hsl(215, 100%, 55%)
+ *  text primary:       hsl(0, 0%, 95%)
+ *  text secondary:     hsl(230, 8%, 78%)
+ *  text muted:         hsla(230, 10%, 100%, .52)
+ *  header gradient:    in oklch 135deg, #B015B0 0%, #3D0080 50%, var(--bg) 100%
  *
  *  Typography scale (rem)
  *  --text-xs: 0.75    --text-sm: 0.875   --text-base: 1
@@ -37,17 +37,17 @@
  */
 
 :root {
-  --bg: #040714;
-  --surface-1: rgba(255,255,255,.03);
-  --surface-2: rgba(255,255,255,.06);
-  --border-subtle: rgba(255,255,255,.07);
-  --border: rgba(255,255,255,.1);
-  --border-strong: rgba(255,255,255,.22);
-  --text-primary: #f9f9f9;
-  --text-secondary: #cacaca;
-  --text-muted: rgba(255,255,255,.55);
-  --accent: #0063e5;
-  --accent-bright: #0080ff;
+  --bg: hsl(230, 35%, 7%);
+  --surface-1: hsla(250, 20%, 98%, .04);
+  --surface-2: hsla(250, 20%, 98%, .07);
+  --border-subtle: hsla(250, 15%, 100%, .06);
+  --border: hsla(250, 15%, 100%, .1);
+  --border-strong: hsla(250, 15%, 100%, .2);
+  --text-primary: hsl(0, 0%, 95%);
+  --text-secondary: hsl(230, 8%, 78%);
+  --text-muted: hsla(230, 10%, 100%, .52);
+  --accent: hsl(215, 100%, 45%);
+  --accent-bright: hsl(215, 100%, 55%);
   --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
   --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem;
@@ -94,7 +94,7 @@ main {
 
 /* ── Header ────────────────────────────────────────────────── */
 .header-bar {
-  background: linear-gradient(in oklch 135deg, #B015B0 0%, #3D0080 50%, #040714 100%);
+  background: linear-gradient(in oklch 135deg, #B015B0 0%, #3D0080 50%, var(--bg) 100%);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-subtle);
   padding: 0 var(--space-6);
@@ -312,10 +312,10 @@ button:active, .btn:active {
 /* ── Toast ─────────────────────────────────────────────────── */
 .toast {
   position: fixed; bottom: 24px; right: 24px; z-index: 999;
-  background: #1a1730; border: 1px solid rgba(255,255,255,0.15);
+  background: hsl(245, 25%, 14%); border: 1px solid hsla(250, 20%, 60%, 0.15);
   border-radius: 8px; padding: 10px 16px;
   font-size: 0.84rem; color: var(--text-primary);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+  box-shadow: 0 4px 20px hsla(240, 40%, 4%, 0.6);
   pointer-events: none;
   transform: translateY(8px); opacity: 0;
   transition: opacity 0.18s, transform 0.18s;
@@ -401,13 +401,8 @@ button:active, .btn:active {
     padding: 4px 8px;
   }
 
-  .complete-item-btn,
-  .block-item-btn,
-  .edit-item-btn,
-  .delete-item-btn {
+  .item-kebab-btn {
     opacity: 1;
-    width: 32px;
-    height: 32px;
   }
 
   .completed-card {
@@ -470,14 +465,15 @@ button:active, .btn:active {
 }
 
 .btn-secondary {
-  background: var(--surface-2);
+  background: hsla(250, 15%, 50%, .1);
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid hsla(250, 15%, 60%, .15);
 }
 
 .btn-secondary:hover {
-  background: var(--surface-1);
+  background: hsla(250, 15%, 50%, .18);
   color: var(--text-primary);
+  border-color: hsla(250, 15%, 60%, .25);
 }
 
 .btn-small {
@@ -516,11 +512,13 @@ button:active, .btn:active {
   flex-direction: column;
   gap: var(--space-3);
   min-height: 200px;
+  position: relative;
 }
 
 .item-card {
   background: var(--surface-1);
-  border: 3px solid white;
+  border: 2px solid hsla(0, 0%, 100%, 0.18);
+  border-left: 4px solid hsla(0, 0%, 100%, 0.45);
   border-radius: var(--radius-lg);
   padding: 18px 24px;
   cursor: grab;
@@ -532,12 +530,13 @@ button:active, .btn:active {
   align-items: center;
   min-height: 80px;
   height: 80px;
+  box-shadow: 0 2px 12px hsla(240, 40%, 4%, 0.25);
+  overflow: visible;
 }
 
 .item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
-  border-width: 3px;
+  box-shadow: 0 12px 28px hsla(240, 40%, 4%, 0.4);
+  border-color: hsla(0, 0%, 100%, 0.3);
 }
 
 .item-card:active {
@@ -567,11 +566,11 @@ button:active, .btn:active {
 }
 
 .item-text {
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   font-weight: 600;
-  color: white;
+  color: hsla(0, 0%, 100%, 0.92);
   line-height: 1.4;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  text-shadow: 0 1px 4px hsla(240, 30%, 4%, 0.5);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -583,107 +582,165 @@ button:active, .btn:active {
 .item-right-col {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
+  flex-direction: row-reverse;
 }
 
 .item-priority {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   text-align: center;
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  background: hsla(240, 20%, 8%, 0.45);
+  color: hsla(0, 0%, 100%, 0.9);
+  border: 1px solid hsla(0, 0%, 100%, 0.22);
+  box-shadow: 0 1px 4px hsla(240, 30%, 4%, 0.3);
   backdrop-filter: blur(6px);
   white-space: nowrap;
+  letter-spacing: 0.03em;
 }
 
 .rank-up,
 .rank-down {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   backdrop-filter: blur(6px);
-  border: 2px solid rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
 }
 
 .rank-up {
-  background: rgba(34, 197, 94, 0.5);
-  color: white;
+  background: hsla(150, 60%, 38%, 0.65);
+  color: hsl(150, 50%, 90%);
+  border: 1px solid hsla(150, 55%, 42%, 0.5);
 }
 
 .rank-down {
-  background: rgba(239, 68, 68, 0.5);
-  color: white;
+  background: hsla(4, 65%, 52%, 0.6);
+  color: hsl(4, 80%, 88%);
+  border: 1px solid hsla(4, 60%, 50%, 0.45);
 }
 
 .tag {
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  font-size: 0.875rem;
+  padding: 5px 10px;
+  background: hsla(240, 20%, 8%, 0.4);
+  border: 1px solid hsla(0, 0%, 100%, 0.22);
+  border-radius: 6px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  color: hsla(0, 0%, 100%, 0.88);
+  box-shadow: 0 1px 4px hsla(240, 30%, 4%, 0.25);
   backdrop-filter: blur(6px);
   white-space: nowrap;
 }
 
 .item-notes {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8125rem;
+  color: hsla(0, 0%, 100%, 0.68);
   line-height: 1.4;
   font-style: italic;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: 0 1px 3px hsla(240, 30%, 4%, 0.4);
 }
 
-.edit-item-btn,
-.delete-item-btn {
-  width: 36px;
-  height: 36px;
+/* ── Kebab menu & dropdown ─────────────────────────────────── */
+.item-actions-wrapper {
+  position: relative;
+}
+
+.item-kebab-btn {
+  width: 32px;
+  height: 32px;
   padding: 0;
   border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
+  border: none;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   transition: all var(--dur);
   opacity: 0;
 }
-
-.item-card:hover .edit-item-btn,
-.item-card:hover .delete-item-btn {
+.item-card:hover .item-kebab-btn {
   opacity: 1;
 }
-
-.edit-item-btn:hover,
-.delete-item-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.8);
-  transform: translateY(-2px);
+.item-kebab-btn:hover,
+.item-actions-wrapper.open .item-kebab-btn {
+  background: rgba(0, 0, 0, 0.45);
+  color: white;
 }
 
-.edit-item-btn:active,
-.delete-item-btn:active {
-  transform: translateY(0);
+.item-actions-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 150px;
+  background: hsl(245, 25%, 14%);
+  border: 1px solid hsla(250, 20%, 60%, 0.15);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 12px 36px hsla(240, 40%, 4%, 0.7), 0 0 0 1px hsla(250, 20%, 100%, 0.03);
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.item-actions-wrapper.open .item-actions-dropdown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.item-actions-wrapper.open {
+  z-index: 100;
+}
+
+.action-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255,255,255,0.85);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur-fast);
+  text-align: left;
+}
+.action-dropdown-item:hover {
+  background: hsla(250, 30%, 60%, 0.12);
+  color: hsl(0, 0%, 97%);
+}
+.action-dropdown-item--danger {
+  color: hsl(4, 75%, 68%);
+}
+.action-dropdown-item--danger:hover {
+  background: hsla(4, 60%, 50%, 0.15);
+  color: hsl(4, 80%, 78%);
+}
+
+.action-dropdown-divider {
+  height: 1px;
+  background: hsla(250, 20%, 60%, 0.1);
+  margin: 4px 8px;
 }
 
 /* Drag handle is now replaced with drag-indicator in the new layout */
@@ -882,9 +939,9 @@ button:active, .btn:active {
 .blocked-banner {
   position: absolute;
   top: 0; left: 0; right: 0;
-  background: rgba(0,0,0,0.65);
+  background: hsla(240, 20%, 6%, 0.7);
   backdrop-filter: blur(4px);
-  color: #fbbf24;
+  color: hsl(45, 85%, 58%);
   font-size: var(--text-xs);
   font-weight: 700;
   text-transform: uppercase;
@@ -896,48 +953,17 @@ button:active, .btn:active {
   gap: 6px;
 }
 
-.item-card--blocked .item-right-col .block-item-btn {
+.item-card--blocked .item-kebab-btn {
   opacity: 1;
-  background: rgba(251, 191, 36, 0.3);
-  border-color: #fbbf24;
+  color: hsl(45, 85%, 58%);
 }
 
-/* ── Complete / Block action buttons ──────────────────────── */
-.complete-item-btn,
-.block-item-btn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.3);
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: all var(--dur);
-  opacity: 0;
+/* ── Complete / Block as dropdown items ───────────────────── */
+.complete-item-btn:hover svg {
+  color: hsl(150, 55%, 48%);
 }
-.item-card:hover .complete-item-btn,
-.item-card:hover .block-item-btn {
-  opacity: 1;
-}
-.complete-item-btn:hover {
-  background: rgba(34, 197, 94, 0.4);
-  border-color: #22c55e;
-  transform: translateY(-2px);
-}
-.block-item-btn:hover {
-  background: rgba(251, 191, 36, 0.3);
-  border-color: #fbbf24;
-  transform: translateY(-2px);
-}
-.complete-item-btn:active,
-.block-item-btn:active {
-  transform: translateY(0);
+.block-item-btn:hover svg {
+  color: hsl(45, 85%, 55%);
 }
 
 /* ── Completed section ────────────────────────────────────── */
@@ -1046,9 +1072,9 @@ button:active, .btn:active {
   height: 28px;
   padding: 0;
   border-radius: 6px;
-  border: 1px solid rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  border: 1px solid hsla(150, 55%, 42%, 0.5);
+  background: hsla(150, 55%, 42%, 0.15);
+  color: hsl(150, 55%, 48%);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1057,8 +1083,8 @@ button:active, .btn:active {
   flex-shrink: 0;
 }
 .uncomplete-item-btn:hover {
-  background: rgba(34, 197, 94, 0.3);
-  border-color: #22c55e;
+  background: hsla(150, 55%, 42%, 0.3);
+  border-color: hsl(150, 55%, 48%);
 }
 
 .completed-card .delete-item-btn {

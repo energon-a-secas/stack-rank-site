@@ -1,0 +1,128 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Logo" [ref=e5] [cursor=pointer]:
+        - /url: https://ehq.cl/
+        - img "Logo" [ref=e6]
+      - link "Stack Rank Shared priority lists" [ref=e7] [cursor=pointer]:
+        - /url: ./
+        - heading "Stack Rank" [level=1] [ref=e8]
+        - generic [ref=e9]: Shared priority lists
+    - link "Neorgon home" [ref=e10] [cursor=pointer]:
+      - /url: https://neorgon.com/
+      - img [ref=e11]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - heading "Reporting Priorities" [level=2] [ref=e33]
+        - generic [ref=e18]:
+          - button "Add Item" [ref=e19] [cursor=pointer]
+          - button "Share" [ref=e20] [cursor=pointer]
+          - button "Templates" [ref=e21] [cursor=pointer]
+          - button "Export" [ref=e22] [cursor=pointer]
+          - button "Import" [ref=e23] [cursor=pointer]
+          - button "Reset Ranks" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - generic [ref=e376]:
+          - generic [ref=e377]:
+            - generic [ref=e378]: P1
+            - generic [ref=e379]: Internal
+          - generic [ref=e380]:
+            - heading "Ledger Integration - Stage 1" [level=3] [ref=e381]
+            - generic [ref=e382]: Our honor and pride is at risk!
+          - generic [ref=e383]:
+            - generic [ref=e384]:
+              - button "Actions" [active] [ref=e385] [cursor=pointer]:
+                - img [ref=e386]
+              - generic [ref=e434]:
+                - button "Complete" [ref=e435] [cursor=pointer]:
+                  - img [ref=e436]
+                  - generic [ref=e438]: Complete
+                - button "Block" [ref=e439] [cursor=pointer]:
+                  - img [ref=e440]
+                  - generic [ref=e442]: Block
+                - button "Edit" [ref=e443] [cursor=pointer]:
+                  - img [ref=e444]
+                  - generic [ref=e446]: Edit
+                - button "Delete" [ref=e448] [cursor=pointer]:
+                  - img [ref=e449]
+                  - generic [ref=e451]: Delete
+            - generic [ref=e390]: ↑ 3
+        - generic [ref=e391]:
+          - generic [ref=e392]:
+            - generic [ref=e393]: P2
+            - generic [ref=e394]: Ledger
+          - heading "Dynamic Assignment based on Jira" [level=3] [ref=e396]
+          - generic [ref=e397]:
+            - generic [ref=e398]:
+              - button "Actions" [ref=e399] [cursor=pointer]:
+                - img [ref=e400]
+              - generic:
+                - button "Complete":
+                  - img
+                  - generic: Complete
+                - button "Block":
+                  - img
+                  - generic: Block
+                - button "Edit":
+                  - img
+                  - generic: Edit
+                - button "Delete":
+                  - img
+                  - generic: Delete
+            - generic [ref=e404]: ↑ 8
+        - generic [ref=e405]:
+          - generic [ref=e406]:
+            - generic [ref=e407]: P5
+            - generic [ref=e408]: Airtable
+          - generic [ref=e409]:
+            - heading "AI Categories of Work" [level=3] [ref=e410]
+            - generic [ref=e411]: With a JSON, Claude, and vodka
+          - generic [ref=e413]:
+            - button "Actions" [ref=e414] [cursor=pointer]:
+              - img [ref=e415]
+            - generic:
+              - button "Complete":
+                - img
+                - generic: Complete
+              - button "Block":
+                - img
+                - generic: Block
+              - button "Edit":
+                - img
+                - generic: Edit
+              - button "Delete":
+                - img
+                - generic: Delete
+        - generic [ref=e419]:
+          - generic [ref=e420]:
+            - generic [ref=e421]: P2
+            - generic [ref=e422]: Airtable
+          - generic [ref=e423]:
+            - heading "Automatic Event Status Transition" [level=3] [ref=e424]
+            - generic [ref=e425]: Day one feature, one year later
+          - generic [ref=e426]:
+            - generic [ref=e427]:
+              - button "Actions" [ref=e428] [cursor=pointer]:
+                - img [ref=e429]
+              - generic:
+                - button "Complete":
+                  - img
+                  - generic: Complete
+                - button "Block":
+                  - img
+                  - generic: Block
+                - button "Edit":
+                  - img
+                  - generic: Edit
+                - button "Delete":
+                  - img
+                  - generic: Delete
+            - generic [ref=e433]: ↓ 2
+  - contentinfo [ref=e31]:
+    - text: Part of
+    - link "Neorgon" [ref=e32] [cursor=pointer]:
+      - /url: https://neorgon.com/
+  - generic: List loaded successfully

@@ -75,27 +75,43 @@ function renderItemCard(item, index) {
         ${item.notes ? `<div class="item-notes">${escHtml(item.notes)}</div>` : ''}
       </div>
       <div class="item-right-col">
+        <div class="item-actions-wrapper">
+          <button class="item-kebab-btn" title="Actions" data-id="${item.id}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
+            </svg>
+          </button>
+          <div class="item-actions-dropdown">
+            <button class="action-dropdown-item complete-item-btn" data-id="${item.id}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+              </svg>
+              <span>Complete</span>
+            </button>
+            <button class="action-dropdown-item block-item-btn" data-id="${item.id}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/>
+              </svg>
+              <span>${isBlocked ? 'Unblock' : 'Block'}</span>
+            </button>
+            <button class="action-dropdown-item edit-item-btn" data-id="${item.id}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              </svg>
+              <span>Edit</span>
+            </button>
+            <div class="action-dropdown-divider"></div>
+            <button class="action-dropdown-item action-dropdown-item--danger delete-item-btn" data-id="${item.id}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+              </svg>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
         ${rankIndicator}
-        <button class="complete-item-btn" title="Mark complete" data-id="${item.id}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-          </svg>
-        </button>
-        <button class="block-item-btn" title="${isBlocked ? 'Unblock' : 'Block'}" data-id="${item.id}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/>
-          </svg>
-        </button>
-        <button class="edit-item-btn" title="Edit" data-id="${item.id}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-          </svg>
-        </button>
-        <button class="delete-item-btn" title="Delete" data-id="${item.id}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-          </svg>
-        </button>
       </div>
     </div>
   `;
@@ -261,7 +277,7 @@ function setupDragAndDrop() {
     animation: 250,
     easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
     ghostClass: 'dragging',
-    filter: 'button, .edit-item-btn, .delete-item-btn, .complete-item-btn, .block-item-btn',
+    filter: 'button, .item-kebab-btn, .item-actions-dropdown, .action-dropdown-item',
     preventOnFilter: false,
     onEnd: async function(evt) {
       const { oldIndex, newIndex } = evt;
@@ -284,10 +300,38 @@ function setupDragAndDrop() {
   });
 }
 
+function closeAllDropdowns() {
+  document.querySelectorAll('.item-actions-wrapper.open').forEach(w => {
+    w.classList.remove('open');
+    const card = w.closest('.item-card');
+    if (card) card.style.zIndex = '';
+  });
+}
+
+if (!window._dropdownListenerAdded) {
+  document.addEventListener('click', () => closeAllDropdowns());
+  window._dropdownListenerAdded = true;
+}
+
 function updateEventListeners() {
+  document.querySelectorAll('.item-kebab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wrapper = btn.closest('.item-actions-wrapper');
+      const wasOpen = wrapper.classList.contains('open');
+      closeAllDropdowns();
+      if (!wasOpen) {
+        wrapper.classList.add('open');
+        const card = wrapper.closest('.item-card');
+        if (card) card.style.zIndex = '50';
+      }
+    });
+  });
+
   document.querySelectorAll('.edit-item-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      closeAllDropdowns();
       const itemId = btn.dataset.id;
       const item = state.list.items.find(i => i.id === itemId);
       if (item) {
@@ -299,6 +343,7 @@ function updateEventListeners() {
   document.querySelectorAll('.delete-item-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      closeAllDropdowns();
       const itemId = btn.dataset.id;
       if (confirm('Delete this item?')) {
         const { deleteItem } = await import('./state.js');
@@ -312,6 +357,7 @@ function updateEventListeners() {
   document.querySelectorAll('.complete-item-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      closeAllDropdowns();
       const { toggleComplete } = await import('./state.js');
       toggleComplete(btn.dataset.id);
       renderList();
@@ -322,6 +368,7 @@ function updateEventListeners() {
   document.querySelectorAll('.block-item-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      closeAllDropdowns();
       const itemId = btn.dataset.id;
       const item = state.list.items.find(i => i.id === itemId);
       if (item && item.blockedMessage) {
