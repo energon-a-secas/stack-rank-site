@@ -22,3 +22,7 @@ convex/_generated/
 .env
 .env.*
 .env.local
+
+# ── Dev tools ─────────────────────────────────────────────────────────────────
+.agents/
+.crush/
