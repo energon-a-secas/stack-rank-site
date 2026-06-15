@@ -88,9 +88,12 @@
 
       <div class="empty-state" id="emptyState">
         <div class="empty-state-content">
-          <h3>No items yet</h3>
-          <p>Add your first priority item to get started</p>
-          <button id="addFirstItemBtn" class="btn btn-primary">Add First Item</button>
+          <div class="empty-stack" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <h3>Build your stack</h3>
+          <p>Add items, then drag to rank them top to bottom. Share the URL and everyone sees the same order.</p>
+          <button id="addFirstItemBtn" class="btn btn-primary">Add first item</button>
         </div>
       </div>
     </div>
@@ -100,7 +103,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">Add Item</h3>
-        <button id="closeModalBtn" class="modal-close">&times;</button>
+        <button id="closeModalBtn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
       <form id="itemForm">
         <div class="form-group">
@@ -151,7 +154,7 @@
     <div class="modal-content modal-content--small">
       <div class="modal-header">
         <h3>Block Item</h3>
-        <button id="closeBlockModalBtn" class="modal-close">&times;</button>
+        <button id="closeBlockModalBtn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
       <form id="blockForm">
         <div class="form-group">
@@ -170,7 +173,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Choose Template</h3>
-        <button id="closeTemplateModalBtn" class="modal-close">&times;</button>
+        <button id="closeTemplateModalBtn" class="modal-close" aria-label="Close dialog">&times;</button>
       </div>
       <div class="template-grid">
         <div class="template-card" data-template="shopping">

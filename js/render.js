@@ -51,30 +51,43 @@ export function renderList() {
 function renderItemCard(item, index) {
   const prevIndex = item.prevIndex ?? index;
   const rankChange = prevIndex - index;
-  const rankIndicator = rankChange > 0
-    ? `<span class="rank-up">↑ ${rankChange}</span>`
+  const rankDelta = rankChange > 0
+    ? `<span class="rank-delta rank-up" title="Up ${rankChange} from last order">▲${rankChange}</span>`
     : rankChange < 0
-    ? `<span class="rank-down">↓ ${Math.abs(rankChange)}</span>`
+    ? `<span class="rank-delta rank-down" title="Down ${Math.abs(rankChange)} from last order">▼${Math.abs(rankChange)}</span>`
     : '';
 
   const isBlocked = !!item.blockedMessage;
   const blockedClass = isBlocked ? ' item-card--blocked' : '';
   const blockedBanner = isBlocked
-    ? `<div class="blocked-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>${escHtml(item.blockedMessage)}</div>`
+    ? `<div class="blocked-banner"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>${escHtml(item.blockedMessage)}</div>`
     : '';
 
+  const priorityClass = (item.priority || 'P3').toLowerCase();
+
   return `
-    <div class="item-card${blockedClass}" data-id="${item.id}" data-index="${index}" style="background: ${item.color}; border-color: white;">
+    <div class="item-card${blockedClass}" data-id="${item.id}" data-index="${index}" style="--item-color: ${item.color};">
       ${blockedBanner}
-      <div class="item-left-col">
-        <span class="item-priority">${item.priority}</span>
-        ${item.tags.length > 0 ? item.tags.map(tag => `<span class="tag">${escHtml(tag)}</span>`).join('') : ''}
+      <span class="drag-grip" title="Drag to reorder" aria-hidden="true">
+        <svg viewBox="0 0 10 16" fill="currentColor">
+          <circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/>
+          <circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/>
+          <circle cx="2.5" cy="13.5" r="1.5"/><circle cx="7.5" cy="13.5" r="1.5"/>
+        </svg>
+      </span>
+      <div class="rank-block">
+        <span class="rank-num">${String(index + 1).padStart(2, '0')}</span>
       </div>
-      <div class="item-center-col">
+      <div class="item-body">
         <h3 class="item-text">${escHtml(item.text)}</h3>
+        <div class="item-meta">
+          <span class="item-priority ${priorityClass}">${item.priority}</span>
+          ${rankDelta}
+          ${item.tags.map(tag => `<span class="tag">${escHtml(tag)}</span>`).join('')}
+        </div>
         ${item.notes ? `<div class="item-notes">${escHtml(item.notes)}</div>` : ''}
       </div>
-      <div class="item-right-col">
+      <div class="item-trail">
         <div class="item-actions-wrapper">
           <button class="item-kebab-btn" title="Actions" data-id="${item.id}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -111,7 +124,6 @@ function renderItemCard(item, index) {
             </button>
           </div>
         </div>
-        ${rankIndicator}
       </div>
     </div>
   `;
@@ -150,6 +162,7 @@ function renderCompletedSection(completedItems) {
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
               </svg>
             </button>
+            <span class="completed-dot"></span>
             <span class="completed-text">${escHtml(item.text)}</span>
           </div>
           <div class="completed-right">
@@ -274,8 +287,8 @@ function setupDragAndDrop() {
   }
 
   sortableInstance = new Sortable(itemListEl, {
-    animation: 250,
-    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    animation: 200,
+    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
     ghostClass: 'dragging',
     filter: 'button, .item-kebab-btn, .item-actions-dropdown, .action-dropdown-item',
     preventOnFilter: false,
