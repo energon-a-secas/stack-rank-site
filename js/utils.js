@@ -1,3 +1,12 @@
+// Generic helpers come from the DOM Kit (js/neorgon-dom.js, vendored from
+// packages/neorgon-ui/dom/). They are re-exported so every existing
+// `import { escHtml } from './utils.js'` keeps working.
+//
+// Do not edit js/neorgon-dom.js. Edit the canonical source and run
+// packages/neorgon-ui/sync-dom.sh.
+import { escHtml, debounce, showToast as kitToast } from './neorgon-dom.js';
+export { escHtml, debounce };
+
 // ── Shared utilities ─────────────────────────────────────────
 // Small, pure helper functions used across multiple modules.
 
@@ -9,42 +18,14 @@ export function $(id) {
   return _els[id] || (_els[id] = document.getElementById(id));
 }
 
-/** Escape HTML special characters. */
-export function escHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 /** Show a temporary toast notification. */
-let _toastTimer = null;
-export function showToast(msg, type = 'info') {
-  let el = document.getElementById('app-toast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'app-toast';
-    el.className = 'toast';
-    document.body.appendChild(el);
-  }
-  // Announced by screen readers. Without these the toast is
-  // invisible to anyone not looking at that corner of the screen.
-  el.setAttribute('role', 'status');
-  el.setAttribute('aria-live', 'polite');
-  el.textContent = msg;
-  if (type === 'error') {
-    el.style.background = '#7f1d1d';
-    el.style.borderColor = '#dc2626';
-  } else {
-    el.style.background = '#1a1730';
-    el.style.borderColor = 'rgba(255,255,255,0.15)';
-  }
-  el.classList.add('visible');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => el.classList.remove('visible'), 3000);
+/** This site's own toast contract, rendered by the kit. */
+export function showToast(msg) {
+  return kitToast(msg, { id: 'app-toast', className: 'toast',
+    visibleClass: 'visible', duration: 3000 });
 }
+
 
 /** Format a timestamp for display (e.g. "Apr 27, 2:35 PM"). */
 export function formatTimestamp(ts) {
@@ -54,14 +35,6 @@ export function formatTimestamp(ts) {
     + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-/** Simple debounce. */
-export function debounce(fn, ms) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), ms);
-  };
-}
 
 /** Load Convex client */
 export async function loadConvexClient() {
