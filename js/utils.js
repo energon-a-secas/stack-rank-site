@@ -29,6 +29,10 @@ export function showToast(msg, type = 'info') {
     el.className = 'toast';
     document.body.appendChild(el);
   }
+  // Announced by screen readers. Without these the toast is
+  // invisible to anyone not looking at that corner of the screen.
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
   el.textContent = msg;
   if (type === 'error') {
     el.style.background = '#7f1d1d';
