@@ -26,3 +26,11 @@ convex/_generated/
 # ── Dev tools ─────────────────────────────────────────────────────────────────
 .agents/
 .crush/
+
+# ── Neorgon base (enforced by smoke check 20) ─────────────────────────────────
+!.env.example
+.forge/
+__pycache__/
+*.py[cod]
+skills-archived/
+*.log
