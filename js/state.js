@@ -16,40 +16,65 @@ export const state = {
 };
 
 export const TEMPLATES = {
+  /*
+   * The demonstration template. Every other one is a flat list, which shows
+   * none of what this tool actually does. This one is a sprint caught
+   * mid-reshuffle: `prevIndex` drives the up/down rank deltas, one item is
+   * blocked on someone else, one has already shipped. It is the only template
+   * where the card can be seen in all of its states at once.
+   *
+   * `prevIndex` is the item's position in the *previous* ordering, counted
+   * over active items only, so these seven must stay a permutation of 0-6.
+   * The field is display-only: saveToBackend strips it, so the deltas fade on
+   * the next reload, which is the correct lifetime for "what moved recently".
+   */
+  shifting: {
+    title: 'Shifting Priorities',
+    items: [
+      { id: '1', text: 'Patch the auth token refresh loop', color: '#d63a3a', priority: 'P1', tags: ['urgent', 'security'], notes: 'Sessions dropping after 30 minutes. Two enterprise accounts have escalated.', prevIndex: 4 },
+      { id: '2', text: 'Cut checkout latency below 400ms', color: '#e06b2d', priority: 'P1', tags: ['performance'], notes: 'p95 is 1.2s on mobile.', prevIndex: 1 },
+      { id: '3', text: 'Ship the billing migration', color: '#3574db', priority: 'P2', tags: ['billing', 'infra'], notes: 'Slipped a slot after the auth incident took the week.', prevIndex: 0 },
+      { id: '4', text: 'Rework the onboarding empty states', color: '#7c52d9', priority: 'P3', tags: ['design', 'growth'], notes: '', prevIndex: 5 },
+      { id: '5', text: 'Retire the v1 reporting endpoint', color: '#1296b0', priority: 'P3', tags: ['tech-debt'], notes: '', prevIndex: 2, blockedMessage: 'Two customers still on v1, no migration date' },
+      { id: '6', text: 'Add audit log export', color: '#1a9e70', priority: 'P4', tags: ['enterprise'], notes: 'Asked for in three renewal calls.', prevIndex: 3 },
+      { id: '7', text: 'Translate the docs to Spanish', color: '#d44080', priority: 'P5', tags: ['content', 'i18n'], notes: '', prevIndex: 6 },
+      { id: '8', text: 'Roll out the new status page', color: '#d4890f', priority: 'P4', tags: ['infra'], notes: '', completedAt: Date.now() - 3 * 60 * 60 * 1000 }
+    ]
+  },
   shopping: {
     title: 'Shopping List',
     items: [
-      { id: '1', text: 'Milk and dairy', color: '#3b82f6', priority: 'P2', tags: ['grocery'], notes: '' },
-      { id: '2', text: 'Fresh vegetables', color: '#10b981', priority: 'P2', tags: ['grocery', 'healthy'], notes: '' },
-      { id: '3', text: 'Toilet paper', color: '#f59e0b', priority: 'P4', tags: ['household'], notes: 'Check for deals on bulk' },
-      { id: '4', text: 'Dish soap', color: '#ec4899', priority: 'P5', tags: ['household'], notes: '' }
+      { id: '1', text: 'Milk and dairy', color: '#3574db', priority: 'P2', tags: ['grocery'], notes: '' },
+      { id: '2', text: 'Fresh vegetables', color: '#1a9e70', priority: 'P2', tags: ['grocery', 'healthy'], notes: '' },
+      { id: '3', text: 'Toilet paper', color: '#d4890f', priority: 'P4', tags: ['household'], notes: 'Check for deals on bulk' },
+      { id: '4', text: 'Dish soap', color: '#d44080', priority: 'P5', tags: ['household'], notes: '' }
     ]
   },
   team: {
     title: 'Team Sprint Priorities',
     items: [
-      { id: '1', text: 'Fix critical login bug', color: '#ef4444', priority: 'P1', tags: ['urgent', 'bug'], notes: 'Affects 20% of users' },
-      { id: '2', text: 'Implement user dashboard', color: '#3b82f6', priority: 'P1', tags: ['feature'], notes: 'Blocked by API update' },
-      { id: '3', text: 'Update documentation', color: '#10b981', priority: 'P5', tags: ['docs'], notes: '' }
+      { id: '1', text: 'Fix critical login bug', color: '#d63a3a', priority: 'P1', tags: ['urgent', 'bug'], notes: 'Affects 20% of users' },
+      { id: '2', text: 'Implement user dashboard', color: '#3574db', priority: 'P1', tags: ['feature'], notes: 'Blocked by API update' },
+      { id: '3', text: 'Update documentation', color: '#1a9e70', priority: 'P5', tags: ['docs'], notes: '' }
     ]
   },
   reminder: {
     title: 'Important Reminders',
     items: [
-      { id: '1', text: 'Doctor appointment', color: '#ef4444', priority: 'P1', tags: ['health'], notes: 'Thursday 2pm, bring insurance card' },
-      { id: '2', text: 'Pay electricity bill', color: '#f59e0b', priority: 'P1', tags: ['bills'], notes: 'Due on 15th' },
-      { id: '3', text: 'Renew passport', color: '#8b5cf6', priority: 'P3', tags: ['travel'], notes: 'Expires in 3 months' },
-      { id: '4', text: 'Schedule car maintenance', color: '#10b981', priority: 'P3', tags: ['auto'], notes: 'Oil change overdue' },
-      { id: '5', text: 'Buy birthday gift', color: '#ec4899', priority: 'P4', tags: ['personal'], notes: 'For mom, likes gardening' }
+      { id: '1', text: 'Doctor appointment', color: '#d63a3a', priority: 'P1', tags: ['health'], notes: 'Thursday 2pm, bring insurance card' },
+      { id: '2', text: 'Pay electricity bill', color: '#d4890f', priority: 'P1', tags: ['bills'], notes: 'Due on 15th' },
+      { id: '3', text: 'Renew passport', color: '#7c52d9', priority: 'P3', tags: ['travel'], notes: 'Expires in 3 months' },
+      { id: '4', text: 'Schedule car maintenance', color: '#1a9e70', priority: 'P3', tags: ['auto'], notes: 'Oil change overdue' },
+      { id: '5', text: 'Buy birthday gift', color: '#d44080', priority: 'P4', tags: ['personal'], notes: 'For mom, likes gardening' }
     ]
   },
   project: {
     title: 'Project Milestones',
     items: [
-      { id: '1', text: 'Define project scope', color: '#3b82f6', priority: 'P1', tags: ['planning'], notes: 'Get stakeholder approval' },
-      { id: '2', text: 'Create wireframes', color: '#8b5cf6', priority: 'P2', tags: ['design'], notes: 'Focus on mobile first' },
-      { id: '3', text: 'Set up development environment', color: '#10b981', priority: 'P3', tags: ['dev'], notes: 'Include CI/CD pipeline' },
-      { id: '4', text: 'Write unit tests', color: '#06b6d4', priority: 'P4', tags: ['testing', 'quality'], notes: 'Target 80% coverage' }
+      { id: '1', text: 'Define project scope', color: '#3574db', priority: 'P1', tags: ['planning'], notes: 'Get stakeholder approval' },
+      { id: '2', text: 'Create wireframes', color: '#7c52d9', priority: 'P2', tags: ['design'], notes: 'Focus on mobile first' },
+      { id: '3', text: 'Set up development environment', color: '#1a9e70', priority: 'P3', tags: ['dev'], notes: 'Include CI/CD pipeline' },
+      { id: '4', text: 'Write unit tests', color: '#1296b0', priority: 'P4', tags: ['testing', 'quality'], notes: 'Target 80% coverage' }
     ]
   }
 };
@@ -161,12 +186,19 @@ export function reorderItems(oldIndex, newIndex, s = state) {
   saveToLocalStorage(s);
 }
 
-/** Load template data */
+/**
+ * Load template data.
+ *
+ * Items are deep-copied. A shallow `[...template.items]` hands the live item
+ * objects straight to the list, so completing or blocking an item afterwards
+ * writes that state back into TEMPLATES and the template is permanently dirty
+ * for the rest of the session.
+ */
 export function loadTemplate(templateName, s = state) {
   if (TEMPLATES[templateName]) {
     const template = TEMPLATES[templateName];
     s.list.title = template.title;
-    s.list.items = [...template.items];
+    s.list.items = template.items.map(item => ({ ...item, tags: [...item.tags] }));
     s.isModified = true;
     saveToLocalStorage(s);
     return true;

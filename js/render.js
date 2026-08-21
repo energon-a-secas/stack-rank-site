@@ -59,15 +59,17 @@ function renderItemCard(item, index) {
 
   const isBlocked = !!item.blockedMessage;
   const blockedClass = isBlocked ? ' item-card--blocked' : '';
-  const blockedBanner = isBlocked
-    ? `<div class="blocked-banner"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>${escHtml(item.blockedMessage)}</div>`
+  // Lives inside .item-body, aligned with the title. As a full-width row above
+  // the grid it pushed the rank numeral down and made blocked cards taller than
+  // their neighbours, which is exactly the alignment a ranked list depends on.
+  const blockedNote = isBlocked
+    ? `<div class="blocked-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg><span>${escHtml(item.blockedMessage)}</span></div>`
     : '';
 
   const priorityClass = (item.priority || 'P3').toLowerCase();
 
   return `
     <div class="item-card${blockedClass}" data-id="${item.id}" data-index="${index}" style="--item-color: ${item.color};">
-      ${blockedBanner}
       <span class="drag-grip" title="Drag to reorder" aria-hidden="true">
         <svg viewBox="0 0 10 16" fill="currentColor">
           <circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/>
@@ -85,6 +87,7 @@ function renderItemCard(item, index) {
           ${rankDelta}
           ${item.tags.map(tag => `<span class="tag">${escHtml(tag)}</span>`).join('')}
         </div>
+        ${blockedNote}
         ${item.notes ? `<div class="item-notes">${escHtml(item.notes)}</div>` : ''}
       </div>
       <div class="item-trail">

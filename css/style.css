@@ -41,6 +41,15 @@
   --p5: oklch(0.71 0.10 225);
   --p6: oklch(0.67 0.025 290);
 
+  /*
+   * Blocked is a state, not a severity, and the priority ramp already owns
+   * every warm hue (P1 25, P2 55, P3 85). So blocked does not try to win a
+   * hue: it sits at low chroma, a warm stone that cannot be misread as a
+   * priority chip, and carries its meaning in the spine's hazard stripes
+   * instead. Raising this chroma puts it straight back into the ramp.
+   */
+  --blocked: oklch(0.75 0.085 62);
+
   --font: 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
   --text-lg: 1.125rem; --text-xl: 1.3125rem; --text-2xl: 1.5rem;
@@ -307,14 +316,14 @@ button:active, .btn:active {
   .item-card {
     grid-template-columns: auto 1fr auto;
     gap: 12px;
-    padding: 12px;
+    padding: 12px 12px 12px 11px;
   }
 
   /* Hide the dedicated grip on touch — the whole card is draggable */
   .drag-grip { display: none; }
 
-  .rank-block { min-width: 40px; height: 44px; }
-  .rank-num { font-size: 1.3125rem; }
+  .rank-block { min-width: 30px; }
+  .rank-num { font-size: 1.375rem; }
 
   .item-card .item-kebab-btn { opacity: 1; }
 
@@ -439,25 +448,45 @@ button:active, .btn:active {
 
 .item-card {
   --item-color: var(--accent);
+  --spine: var(--item-color);
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px 14px 12px;
+  padding: 14px 16px 14px 15px;
   cursor: grab;
   transition: background var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
   position: relative;
   display: grid;
-  grid-template-columns: 20px auto 1fr auto;
-  gap: 14px;
+  grid-template-columns: 16px auto 1fr auto;
+  gap: 12px;
   align-items: center;
   min-height: 72px;
   animation: fadeIn 0.28s var(--ease-out) both;
+}
+
+/*
+ * Color spine — the item color lives on the card edge, not inside a tinted
+ * tile. It reads as a stripe down the list at any density, and it survives the
+ * eight-color palette without a per-hue contrast lottery.
+ */
+.item-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  /* Rounded here rather than clipped by overflow:hidden, which would also
+     clip the kebab dropdown out of existence. */
+  border-radius: calc(var(--radius) - 1px) 0 0 calc(var(--radius) - 1px);
+  background: var(--spine);
+  opacity: 0.8;
+  transition: opacity var(--dur) var(--ease-out), width var(--dur) var(--ease-out);
 }
 
 .item-card:hover {
   background: var(--surface-2);
   border-color: var(--border-strong);
 }
+.item-card:hover::before { opacity: 1; width: 4px; }
 
 .item-card:active { cursor: grabbing; }
 .item-card.dragging {
@@ -486,27 +515,31 @@ button:active, .btn:active {
 .drag-grip:active { cursor: grabbing; }
 .drag-grip svg { width: 14px; height: 18px; display: block; }
 
-/* Rank block — the hero. Ordinal position, tinted by item color. */
+/*
+ * Rank numeral — the hero. Ordinal position, set as type rather than boxed:
+ * a tile with a hairline ring and dim text inside reads as a disabled input.
+ * The neutral ramp is deliberate; brightness encodes rank, the spine encodes
+ * identity, and neither has to borrow the other's channel.
+ */
 .rank-block {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 48px;
-  padding: 0 8px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in oklch, var(--item-color) 16%, var(--surface-1));
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--item-color) 38%, transparent);
+  justify-content: flex-end;
+  min-width: 36px;
 }
 .rank-num {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.625rem;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in oklch, var(--item-color) 72%, var(--text-primary));
+  color: var(--text-muted);
+  transition: color var(--dur) var(--ease-out);
 }
+/* Top of the stack reads first. */
+.item-card:nth-child(1) .rank-num { color: var(--text-primary); }
+.item-card:nth-child(2) .rank-num,
+.item-card:nth-child(3) .rank-num { color: var(--text-secondary); }
+.item-card:hover .rank-num { color: var(--text-primary); }
 
 .item-body {
   min-width: 0;
@@ -908,35 +941,84 @@ button:active, .btn:active {
   line-height: 1.4;
 }
 
-/* ── Blocked state ─────────────────────────────────────────── */
+/*
+ * The one template that demonstrates the tool rather than just filling it.
+ * Spans the grid so it reads as the starting point, not a fifth option.
+ */
+.template-card--featured {
+  grid-column: 1 / -1;
+  background: color-mix(in oklch, var(--accent) 10%, var(--surface-1));
+  border-color: color-mix(in oklch, var(--accent) 34%, var(--border));
+}
+.template-card--featured:hover {
+  background: color-mix(in oklch, var(--accent) 16%, var(--surface-2));
+}
+.template-card--featured p {
+  color: var(--text-secondary);
+}
+
+/*
+ * ── Blocked state ─────────────────────────────────────────────
+ * A blocked item is stalled, not urgent, so it must not compete with the
+ * priority ramp for meaning. It gets a *texture* instead of another hue: the
+ * spine turns into hazard stripes, which reads as "do not proceed" at a glance
+ * and stays distinct from all eight solid item colors and all six priorities.
+ * Height is untouched, so the numeral column stays aligned down the list.
+ */
 .item-card--blocked {
-  background: color-mix(in oklch, var(--p3) 7%, var(--surface-1));
-  border-color: color-mix(in oklch, var(--p3) 28%, var(--border));
+  --spine: repeating-linear-gradient(
+    135deg,
+    var(--blocked) 0 3px,
+    color-mix(in oklch, var(--blocked) 22%, var(--surface-1)) 3px 7px
+  );
+  background: color-mix(in oklch, var(--blocked) 5%, var(--surface-1));
+  border-color: color-mix(in oklch, var(--blocked) 26%, var(--border));
+}
+/* Wider than a solid spine: at 3px the diagonal reads as noise, not stripes. */
+.item-card--blocked::before { width: 5px; opacity: 0.95; }
+.item-card--blocked:hover::before { width: 6px; opacity: 1; }
+
+.item-card--blocked:hover {
+  background: color-mix(in oklch, var(--blocked) 9%, var(--surface-2));
+  border-color: color-mix(in oklch, var(--blocked) 42%, var(--border));
 }
 .item-card--blocked .item-text {
   color: var(--text-secondary);
 }
-.item-card--blocked .rank-num {
-  color: var(--text-muted);
+.item-card--blocked .rank-num,
+.item-card--blocked:hover .rank-num {
+  color: color-mix(in oklch, var(--blocked) 42%, var(--text-muted));
 }
 
-.blocked-banner {
-  grid-column: 1 / -1;
-  margin-bottom: 2px;
-  color: color-mix(in oklch, var(--p3) 70%, white);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  display: flex;
+/*
+ * The reason is a status, so it is bounded like one. As a bare line of amber
+ * text it read as a second notes field and got skipped.
+ */
+.blocked-note {
+  display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 6px;
+  max-width: 100%;
+  padding: 3px 9px 3px 7px;
+  border-radius: 5px;
+  background: color-mix(in oklch, var(--blocked) 15%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--blocked) 34%, transparent);
+  color: color-mix(in oklch, var(--blocked) 62%, white);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.4;
 }
-.blocked-banner svg { flex-shrink: 0; }
+.blocked-note svg { flex-shrink: 0; opacity: 0.85; }
+.blocked-note span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .item-card--blocked .item-kebab-btn {
   opacity: 1;
-  color: color-mix(in oklch, var(--p3) 60%, white);
+  color: color-mix(in oklch, var(--blocked) 60%, white);
 }
 
 /* ── Complete / Block as dropdown items ───────────────────── */
@@ -944,7 +1026,7 @@ button:active, .btn:active {
   color: var(--p4);
 }
 .block-item-btn:hover svg {
-  color: var(--p3);
+  color: var(--blocked);
 }
 
 /* ── Completed section ────────────────────────────────────── */

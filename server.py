@@ -11,6 +11,13 @@ from pathlib import Path
 PORT = 8828
 
 class SPAHandler(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        # Dev server only. Without this the browser caches js/*.js heuristically
+        # and keeps serving a stale ES module after an edit, so the page under
+        # test is not the code on disk. Silent, and very expensive to debug.
+        self.send_header('Cache-Control', 'no-store, must-revalidate')
+        super().end_headers()
+
     def do_GET(self):
         # Get the requested path
         path = self.translate_path(self.path)
