@@ -30,7 +30,7 @@ Drag-and-drop reorder team priorities. Share lists via URL, changes sync instant
 
 ## Overview
 
-Stack Rank helps teams prioritize work visually. Drag items to reorder, customize colors, add metadata, and share lists with anyone via URL. No signup needed—anyone with the link can edit.
+Stack Rank helps teams prioritize work visually. Drag items to reorder, customize colors, add metadata, and share lists with anyone via URL. No signup needed-anyone with the link can edit.
 
 **Live:** stackrank.neorgon.com
 
