@@ -12,7 +12,12 @@ export const state = {
   },
   editingItem: null,
   convex: null,
-  isModified: false
+  isModified: false,
+  // True while the list exists only in this browser. A bare visit to the site
+  // used to insert a `lists` row before the visitor had typed anything, so every
+  // click through from the hub left an empty document behind. Nothing is written
+  // until the first real edit, or until Share, which needs a link that resolves.
+  isDraft: false
 };
 
 export const TEMPLATES = {
@@ -113,10 +118,19 @@ export function loadFromBackend(listData, s = state) {
     items: listData.items || []
   };
   s.isModified = false;
+  s.isDraft = false;
 }
 
-/** Create a new list */
-export async function createNewList(listId = null, s = state) {
+/**
+ * Start a new list in memory. Writes nothing: the row is inserted by
+ * `persistList` on the first edit.
+ *
+ * A `listId` from the URL hash is treated the same way, so a link to a list that
+ * was deleted, or a mistyped id, lands on a saveable draft. It used to land on
+ * local state with no row, and the first edit then failed inside
+ * `lists:updateList`, which throws "List not found".
+ */
+export function createNewList(listId = null, s = state) {
   const newListId = listId || Math.random().toString(36).substring(2, 12);
   s.currentListId = newListId;
   s.list = {
@@ -124,13 +138,41 @@ export async function createNewList(listId = null, s = state) {
     items: []
   };
   s.isModified = false;
-
-  if (!listId) {
-    const data = await import('./data.js');
-    await data.createList(newListId, s.list);
-  }
+  s.isDraft = true;
 
   return newListId;
+}
+
+/**
+ * Write the list to the backend, inserting its row the first time.
+ *
+ * The create-or-update choice lives here rather than in `render.js` so it can be
+ * tested without a DOM: `tests/draft.test.mjs` passes a fake data layer. Returns
+ * `{ created }` so the caller can put the id in the URL at the one moment the
+ * link starts resolving.
+ *
+ * `prevIndex` is display-only and never stored, and an absent `completedAt` or
+ * `blockedMessage` is dropped rather than sent as null, which the validators in
+ * `convex/lists.ts` would reject.
+ */
+export async function persistList(dataLayer, s = state) {
+  const cleanItems = s.list.items.map(item => {
+    const { prevIndex, ...rest } = item;
+    const clean = { ...rest };
+    if (!clean.completedAt) delete clean.completedAt;
+    if (!clean.blockedMessage) delete clean.blockedMessage;
+    return clean;
+  });
+  const payload = { title: s.list.title, items: cleanItems };
+
+  if (s.isDraft) {
+    await dataLayer.createList(s.currentListId, payload);
+    s.isDraft = false;
+    return { created: true, listId: s.currentListId };
+  }
+
+  await dataLayer.updateList(s.currentListId, payload);
+  return { created: false, listId: s.currentListId };
 }
 
 /** Add a new item to the list */

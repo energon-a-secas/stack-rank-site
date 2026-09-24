@@ -1,7 +1,7 @@
 // ── DOM rendering ────────────────────────────────────────────
 // All functions that create or update DOM elements.
 
-import { state } from './state.js';
+import { state, persistList } from './state.js';
 import { escHtml, formatTimestamp } from './utils.js';
 
 let sortableInstance = null;
@@ -401,17 +401,15 @@ function updateEventListeners() {
 
 async function saveToBackend() {
   const data = await import('./data.js');
-  const cleanItems = state.list.items.map(item => {
-    const { prevIndex, ...rest } = item;
-    const clean = { ...rest };
-    if (!clean.completedAt) delete clean.completedAt;
-    if (!clean.blockedMessage) delete clean.blockedMessage;
-    return clean;
-  });
-  await data.updateList(state.currentListId, {
-    title: state.list.title,
-    items: cleanItems
-  });
+  const result = await persistList(data);
+
+  // The id goes in the URL the moment the row exists, and not before: a hash
+  // pointing at nothing is a share link that resolves to an empty list.
+  // `replaceState` rather than `location.hash`, so a bare visit followed by Back
+  // leaves the page instead of stepping through a hash the visitor never chose.
+  if (result.created && !window.location.hash) {
+    history.replaceState(null, '', `#/${state.currentListId}/`);
+  }
 }
 
 export { saveToBackend };

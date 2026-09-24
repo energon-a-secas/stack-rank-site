@@ -19,7 +19,7 @@ async function loadListFromHash() {
     if (list) {
       loadFromBackend(list);
     } else {
-      await createNewList(urlListId);
+      createNewList(urlListId);
     }
     loadFromLocalStorage();
     render.renderList();
@@ -46,14 +46,14 @@ async function init() {
         loadFromBackend(list);
         console.log('[App] State after loadFromBackend:', state.list);
       } else {
-        console.log('[App] List not found, creating new list with ID:', urlListId);
-        await createNewList(urlListId);
+        console.log('[App] List not found, starting a draft with ID:', urlListId);
+        createNewList(urlListId);
       }
     } else {
-      console.log('[App] No hash, creating new list');
-      await createNewList();
-      window.location.hash = `#/${state.currentListId}/`;
-      console.log('[App] Set hash to:', state.currentListId);
+      // A bare visit gets a draft and no URL. Both the row and the hash appear on
+      // the first edit, so reading the site costs the deployment nothing.
+      console.log('[App] No hash, starting an unsaved draft');
+      createNewList();
     }
 
     // Don't load from localStorage when loading from backend - it might have stale data
@@ -66,7 +66,7 @@ async function init() {
     window.addEventListener('hashchange', loadListFromHash);
 
     console.log('[App] Initialization complete');
-    utils.showToast('List loaded successfully');
+    utils.showToast(state.isDraft ? 'New list ready' : 'List loaded successfully');
 
   } catch (error) {
     console.error('[App] Failed to initialize:', error);

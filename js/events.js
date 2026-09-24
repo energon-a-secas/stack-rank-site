@@ -108,7 +108,19 @@ function handleColorClick(e) {
   e.target.classList.add('active');
 }
 
-function handleShare() {
+async function handleShare() {
+  // Asking for a link is a deliberate act, so it is one of the two things that
+  // turn a draft into a row. Without this the button would hand out a URL for a
+  // list that does not exist, and the next visitor would open an empty one.
+  if (state.isDraft) {
+    try {
+      await saveToBackend();
+    } catch (error) {
+      console.error('Failed to save the list before sharing:', error);
+      showToast('Could not create a share link', 'error');
+      return;
+    }
+  }
   renderUrlDisplay();
   const urlInput = document.getElementById('shareUrl');
   urlInput.select();

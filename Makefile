@@ -7,8 +7,16 @@ PORT = 8828
 help:
 	@echo ""
 	@echo "  make serve    Start dev server → http://localhost:$(PORT)"
+	@echo "  make test     Run the module tests (no browser, no backend)"
 	@echo "  make kill     Kill this project's HTTP server"
 	@echo ""
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+# js/state.js imports nothing and touches no DOM, so it runs under node as it
+# ships. Anything needing a real page is a browser check, not a test here.
+.PHONY: test
+test:
+	@node --test 'tests/*.test.mjs'
 
 # ── Dev server ────────────────────────────────────────────────────────────────
 .PHONY: serve
