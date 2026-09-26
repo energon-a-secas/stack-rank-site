@@ -73,6 +73,33 @@ link can edit). Five things follow from that:
 Who may update or delete a list (a per-list edit token, or sign-in through the
 Auth Kit) is an owner decision that has not been made, not an oversight.
 
+## Content Security Policy
+
+Every page GitHub Pages serves carries a strict `<meta http-equiv="Content-Security-Policy">`:
+`index.html`, `404.html` and `tests/test-hash.html` (it ships too). Scripts get no
+`'unsafe-inline'`, so if an escaping bug returns to `js/render.js`, an injected
+handler or `<script>` still does not run. It is the second layer, not the fix.
+
+- **`index.html` allows three inline scripts by sha256**: the header kit's theme
+  guard, the `window.CONVEX_URL` line and the module that imports the Convex
+  client. Any edit to one, whitespace included, blocks it until the hash is
+  updated. Smoke check 29 in the monorepo (`bash scripts/smoke.sh --only=29`)
+  names the hash a changed script needs and any pin left stale. It skips
+  `tests/`, so `tests/test-hash.html`'s one hash is yours to keep in step.
+- **Third-party scripts are allowed by exact path**: `https://esm.sh/convex@1.21.0/`
+  plus the two `jwt-decode` paths esm.sh resolves it to, and SortableJS's one
+  file on jsdelivr (also SRI-pinned). A version bump changes the policy in the
+  same edit; a new dependency path esm.sh starts serving shows up as a
+  `script-src-elem` violation in the console.
+- **`connect-src` names this deployment only**
+  (`https://industrious-hare-401.convex.cloud/api/`). `ConvexHttpClient` never
+  opens a WebSocket, so there is no `wss:` entry. Moving the deployment changes
+  `CONVEX_URL`, the fallback in `js/utils.js` and this entry together.
+- **No inline event handlers**, in HTML or in JS template strings: they do not
+  run here. Wire listeners in `js/events.js`.
+- `frame-ancestors`, `report-uri` and `X-Content-Type-Options` do nothing in a
+  meta tag, so none are set.
+
 ## Still open
 
 The empty lists that earlier visits already inserted are still in the deployment

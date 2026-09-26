@@ -72,6 +72,10 @@ window.CONVEX_URL = 'https://industrious-hare-401.convex.cloud';
 
 Update this to your production Convex deployment URL.
 
+That script is allowed by its sha256 in the page's Content-Security-Policy, and
+the deployment host is named in `connect-src`, so a new URL means updating the
+policy in the same edit. See "Content Security Policy" in `CLAUDE.md`.
+
 ## Testing Routing
 
 After deploying, test these URLs:

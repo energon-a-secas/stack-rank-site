@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Dh8wp7RjEhxhv7uXGjQpPSX8s1TFVy1VWmQMAyU9jVE='; style-src 'unsafe-inline'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>Hash Test</title>
   <style>
     body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
@@ -16,9 +16,9 @@
   <h1>Hash Routing Test</h1>
   <div id="logs"></div>
   <hr>
-  <button onclick="testHash()">Test Current Hash</button>
-  <button onclick="window.location.hash = '#/test123/'">Go to #/test123/</button>
-  <button onclick="window.location.hash = '#/abc456/'">Go to #/abc456/</button>
+  <button id="testHashBtn">Test Current Hash</button>
+  <button data-hash="#/test123/">Go to #/test123/</button>
+  <button data-hash="#/abc456/">Go to #/abc456/</button>
 
   <script>
     function log(msg, isError = false) {
@@ -45,6 +45,12 @@
       const id = filtered[0];
       log('Extracted ID: "' + id + '"');
     }
+
+    // Listeners, not onclick attributes: the page's CSP runs no inline handler.
+    document.getElementById('testHashBtn').addEventListener('click', testHash);
+    document.querySelectorAll('[data-hash]').forEach(btn => {
+      btn.addEventListener('click', () => { window.location.hash = btn.dataset.hash; });
+    });
 
     // Test on load
     document.addEventListener('DOMContentLoaded', () => {
