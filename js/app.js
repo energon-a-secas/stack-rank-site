@@ -8,6 +8,17 @@ import * as events from './events.js';
 import * as data from './data.js';
 import * as utils from './utils.js';
 
+// A hash id with no row becomes a draft under that id. When the id is one the
+// backend would refuse, createNewList picks a fresh one; the hash is cleared so
+// the first save puts the new id in the URL. Returns true when that happened.
+function startDraft(urlListId) {
+  createNewList(urlListId);
+  if (state.currentListId === urlListId) return false;
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+  return true;
+}
+const RENAMED = 'That link id cannot be saved, so this list gets a new link';
+
 async function loadListFromHash() {
   // Use hash-based routing for GitHub Pages compatibility
   const hash = window.location.hash.slice(1); // Remove leading #
@@ -16,13 +27,15 @@ async function loadListFromHash() {
   if (urlListId && urlListId !== state.currentListId) {
     state.currentListId = urlListId;
     const list = await data.getList(urlListId);
+    let renamed = false;
     if (list) {
       loadFromBackend(list);
     } else {
-      createNewList(urlListId);
+      renamed = startDraft(urlListId);
     }
     loadFromLocalStorage();
     render.renderList();
+    if (renamed) utils.showToast(RENAMED);
   }
 }
 
@@ -32,6 +45,7 @@ async function init() {
     await utils.loadConvexClient();
     console.log('[App] Convex client loaded');
 
+    let renamed = false;
     // Check for hash in URL
     const hash = window.location.hash.slice(1);
     const urlListId = hash.split('/').filter(Boolean)[0];
@@ -47,7 +61,7 @@ async function init() {
         console.log('[App] State after loadFromBackend:', state.list);
       } else {
         console.log('[App] List not found, starting a draft with ID:', urlListId);
-        createNewList(urlListId);
+        renamed = startDraft(urlListId);
       }
     } else {
       // A bare visit gets a draft and no URL. Both the row and the hash appear on
@@ -66,7 +80,7 @@ async function init() {
     window.addEventListener('hashchange', loadListFromHash);
 
     console.log('[App] Initialization complete');
-    utils.showToast(state.isDraft ? 'New list ready' : 'List loaded successfully');
+    utils.showToast(renamed ? RENAMED : state.isDraft ? 'New list ready' : 'List loaded successfully');
 
   } catch (error) {
     console.error('[App] Failed to initialize:', error);

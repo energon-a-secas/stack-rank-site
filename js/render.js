@@ -2,7 +2,8 @@
 // All functions that create or update DOM elements.
 
 import { state, persistList } from './state.js';
-import { escHtml, formatTimestamp, safeColor } from './utils.js';
+import { escHtml, formatTimestamp, safeColor, showToast } from './utils.js';
+import { LIMITS } from './rules.js';
 
 let sortableInstance = null;
 
@@ -200,6 +201,12 @@ function renderCompletedSection(completedItems) {
 
   section.querySelectorAll('.uncomplete-item-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
+      // Restoring skips the 10-item add limit, so it is the one way the page
+      // could reach the backend's cap on items that are not completed.
+      if (state.list.items.filter(i => !i.completedAt).length >= LIMITS.activeItems) {
+        showToast(`A list holds at most ${LIMITS.activeItems} items that are not completed`);
+        return;
+      }
       const { toggleComplete } = await import('./state.js');
       toggleComplete(btn.dataset.id);
       renderList();

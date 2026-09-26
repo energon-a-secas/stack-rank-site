@@ -4,7 +4,8 @@
 import { state, addItem, updateItem, updateTitle, loadTemplate, TEMPLATES } from './state.js';
 import { renderList, openItemModal, closeItemModal, openTemplateModal, closeTemplateModal, closeBlockModal, getSelectedColor, renderUrlDisplay } from './render.js';
 import { saveToBackend } from './render.js';
-import { showToast, copyToClipboard, isHexColor, isItemId } from './utils.js';
+import { showToast, copyToClipboard } from './utils.js';
+import { LIMITS, clampText, listProblem, parseTags } from './rules.js';
 
 export function init() {
   bindEvents();
@@ -45,19 +46,23 @@ function bindEvents() {
   document.addEventListener('click', handleOutsideModalClick);
 }
 
+// The title is a contenteditable heading, so no maxlength stops a paste. It is
+// cut to the backend's limit here, or the save would be refused.
 function handleTitleChange(e) {
-  updateTitle(e.target.textContent.trim());
+  updateTitle(clampText(e.target.textContent.trim(), LIMITS.title));
 }
 
 async function handleTitleBlur(e) {
-  const title = e.target.textContent.trim();
-  if (!title) {
+  const typed = e.target.textContent.trim();
+  if (!typed) {
     e.target.textContent = state.list.title;
     return;
   }
+  const title = clampText(typed, LIMITS.title);
+  if (title !== typed) e.target.textContent = title;
   updateTitle(title);
   await saveToBackend();
-  showToast('List title updated');
+  showToast(title === typed ? 'List title updated' : `Title cut to ${LIMITS.title} characters`);
 }
 
 async function handleItemSubmit(e) {
@@ -78,6 +83,22 @@ async function handleItemSubmit(e) {
 
   if (!state.editingItem && state.list.items.filter(i => !i.completedAt).length >= 10) {
     showToast('Maximum 10 items allowed', 'error');
+    return;
+  }
+
+  // The backend's limits (convex/listRules.ts), checked before anything changes
+  // so the modal stays open with the text still in it.
+  const tags = parseTags(itemData.tags);
+  if (tags.length > LIMITS.tags) {
+    showToast(`An item holds at most ${LIMITS.tags} tags`, 'error');
+    return;
+  }
+  if (tags.some(tag => tag.length > LIMITS.tag)) {
+    showToast(`A tag holds at most ${LIMITS.tag} characters`, 'error');
+    return;
+  }
+  if (!state.editingItem && state.list.items.length >= LIMITS.items) {
+    showToast('This list is full: delete some completed items first', 'error');
     return;
   }
 
@@ -224,22 +245,15 @@ async function handleImportFile(e) {
 
     // Validate items
     for (const item of importData.items) {
-      if (!item.id || !item.text || !item.priority || !item.color) {
+      if (!item || !item.id || !item.text || !item.priority || !item.color) {
         throw new Error('Invalid item data in backup file');
       }
-      // Check priority is valid
-      if (!['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].includes(item.priority)) {
-        throw new Error(`Invalid priority value: ${item.priority}`);
-      }
-      // The same rules the backend applies (convex/listRules.ts), checked here
-      // so a bad file is refused before it replaces the list on screen.
-      if (!isItemId(item.id)) {
-        throw new Error('Invalid item id in backup file');
-      }
-      if (!isHexColor(item.color)) {
-        throw new Error(`Invalid color value: ${item.color}`);
-      }
     }
+    // The same rules the backend applies (convex/listRules.ts, mirrored in
+    // js/rules.js), checked here so a bad file is refused before it replaces the
+    // list on screen rather than after, when the save fails.
+    const problem = listProblem(importData.title, importData.items);
+    if (problem) throw new Error(problem);
 
     // Confirm import
     const confirmMsg = `Import ${importData.items.length} items from "${importData.title}"?\n\nThis will replace your current list.`;

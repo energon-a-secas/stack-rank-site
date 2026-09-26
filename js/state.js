@@ -2,6 +2,8 @@
 // Shared mutable state object. All modules import and mutate the
 // same reference, replacing the original top-level `let` globals.
 
+import { isListId, parseTags } from './rules.js';
+
 const STORAGE_KEY = 'stack-rank-state';
 
 export const state = {
@@ -129,9 +131,14 @@ export function loadFromBackend(listData, s = state) {
  * was deleted, or a mistyped id, lands on a saveable draft. It used to land on
  * local state with no row, and the first edit then failed inside
  * `lists:updateList`, which throws "List not found".
+ *
+ * An id `lists:createList` would refuse (convex/listRules.ts: a ":" or "!" a
+ * browser leaves in a fragment, say) gets a fresh random id instead, or the
+ * first edit would fail. The caller compares `s.currentListId` with what it
+ * passed to tell the visitor.
  */
 export function createNewList(listId = null, s = state) {
-  const newListId = listId || Math.random().toString(36).substring(2, 12);
+  const newListId = isListId(listId) ? listId : Math.random().toString(36).substring(2, 12);
   s.currentListId = newListId;
   s.list = {
     title: 'New Priority List',
@@ -182,7 +189,7 @@ export function addItem(itemData, s = state) {
     text: itemData.text,
     color: itemData.color || '#f97316',
     priority: itemData.priority || 'P3',
-    tags: itemData.tags ? itemData.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+    tags: parseTags(itemData.tags),
     notes: itemData.notes || ''
   };
 
@@ -201,7 +208,7 @@ export function updateItem(itemId, itemData, s = state) {
       text: itemData.text,
       color: itemData.color,
       priority: itemData.priority,
-      tags: itemData.tags ? itemData.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+      tags: parseTags(itemData.tags),
       notes: itemData.notes || ''
     };
     s.isModified = true;

@@ -4,11 +4,13 @@
 // the deployment. These tests pin the rule that replaced it: nothing is written
 // until the first edit, and then exactly one row is written.
 //
-// `state.js` imports nothing and touches no DOM, so it runs here as it ships.
+// `state.js` imports only `rules.js` and neither touches the DOM, so it runs
+// here as it ships.
 // `persistList` takes the data layer as an argument for the same reason, which is
 // what lets a fake stand in for Convex.
 //
-//   node --test tests/          (or: make test)
+//   make test          (or: node --test 'tests/*.test.mjs'; a bare directory
+//                       argument is read as one test file and fails)
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

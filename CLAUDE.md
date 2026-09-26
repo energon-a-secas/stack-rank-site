@@ -32,7 +32,8 @@ Two consequences worth keeping:
   in `js/render.js` calls `history.replaceState` on the one save that created the
   row. A hash pointing at nothing is a share link that opens an empty list.
 - **A hash id with no row is a draft too**, so a link to a deleted list or a
-  mistyped one lands somewhere saveable. It used to hold local state with no row,
+  mistyped one lands somewhere saveable (under a fresh id when the server would
+  refuse the typed one, see below). It used to hold local state with no row,
   and the first edit then failed inside `lists:updateList`, which throws
   "List not found".
 
@@ -46,13 +47,24 @@ check writes the rows it is trying to prove absent.
 
 Nobody signs in. A list's id is its only guard: `getList` and `updateList` are
 public and take no identity, which is what the README promises (anyone with the
-link can edit). Three things follow from that:
+link can edit). Five things follow from that:
 
 - `convex/listRules.ts` checks every stored field before `createList` or
-  `updateList` writes: id and color patterns, lengths, item count. It is the only
+  `updateList` writes: id and color patterns, lengths, item counts. It is the only
   server gate, and `tests/list-rules.test.mjs` pins it in both directions.
+- `js/rules.js` is the page's copy of those rules, and the test fails if the two
+  disagree. The page stops a refused value before sending it: the title is cut
+  at 200, tags past 20 or past 100 characters are refused in the item form, a
+  restore stops at 100 active items, an import is checked whole before it
+  replaces the list, and a typed link id the server would refuse (a `:` or `!`
+  left in the fragment) starts a draft under a fresh id with a notice.
+- **Completed items are never pruned**, so a list grows for as long as it is
+  used. The cap that bites is 100 *active* items. The total is capped at 8192,
+  Convex's own array limit, so it refuses nothing the deployment would store;
+  a first version capped the total at 100 and a list that had finished about 90
+  items could no longer be saved. Do not lower it without a retention rule.
 - `js/render.js` escapes every value it interpolates and reduces a color to a hex
-  color (`safeColor` in `js/utils.js`) before it reaches a style attribute,
+  color (`safeColor` in `js/rules.js`) before it reaches a style attribute,
   because a row can hold anything written before the rules existed.
 - `lists:deleteList` and `migrate:findListsToMigrate` are internal. The first let
   any link holder delete a list, with no page that calls it; the second returned

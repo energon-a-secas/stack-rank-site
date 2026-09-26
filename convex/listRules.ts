@@ -6,9 +6,22 @@
 // js/render.js escapes on output as well; this is the second layer, so one of
 // them failing does not reopen the hole.
 //
-// Limits sit above what the page lets anyone type (item text 200, notes 500,
-// block reason 100, 10 active items), so no list the site itself wrote is
-// refused. Nothing here imports the generated server code, which is what lets
+// The page stops every value these rules refuse before sending it: item text,
+// notes and block reason have input maxlengths below these limits (200, 500,
+// 100), the title and tags are cut or refused at these same limits, a restore
+// stops at the active-item cap, and a typed link id that fails LIST_ID starts a
+// draft under a fresh id. js/rules.js is the page's copy of this file, and
+// tests/list-rules.test.mjs checks the two agree. The one exception is a row
+// stored before these rules existed that already fails them: it loads, but no
+// save of it passes until the offending item is removed.
+//
+// Completed items are never pruned, so a list grows for as long as it is used.
+// The cap that matters is on active items; the total is capped at Convex's own
+// array limit (8192 elements), so it refuses nothing the deployment would have
+// stored. A list of typical items meets the 1 MiB document limit at about that
+// size anyway, and that ceiling is the platform's, not this file's.
+//
+// Nothing here imports the generated server code, which is what lets
 // tests/list-rules.test.mjs run it under node.
 
 import { ConvexError } from "convex/values";
@@ -17,7 +30,8 @@ export const LIMITS = {
   listId: 64,
   itemId: 64,
   title: 200,
-  items: 100,
+  activeItems: 100,
+  items: 8192,
   text: 500,
   tags: 20,
   tag: 100,
@@ -71,6 +85,10 @@ export function checkTitle(title: string) {
 
 export function checkItems(items: StoredItem[]) {
   if (items.length > LIMITS.items) reject(`A list holds at most ${LIMITS.items} items.`);
+  // An item with no completedAt is active, as the page reads it (!item.completedAt).
+  if (items.filter((item) => !item.completedAt).length > LIMITS.activeItems) {
+    reject(`A list holds at most ${LIMITS.activeItems} items that are not completed.`);
+  }
   for (const item of items) {
     if (item.id.length === 0 || item.id.length > LIMITS.itemId || !ITEM_ID.test(item.id)) {
       reject(`Item id must be 1 to ${LIMITS.itemId} letters, digits, _ or -`);
