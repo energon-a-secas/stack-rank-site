@@ -52,15 +52,3 @@ export async function updateList(listId, updates) {
     throw error;
   }
 }
-
-export async function deleteList(listId) {
-  try {
-    const client = getConvexClient();
-    if (!client) return;
-
-    // Call Convex function by name (browser-compatible)
-    await client.mutation('lists:deleteList', { listId });
-  } catch (error) {
-    console.error('Failed to delete list:', error);
-  }
-}

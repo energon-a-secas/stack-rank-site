@@ -42,7 +42,31 @@ flag from `createNewList` reds a different 5 of 7. Verify a change to this area 
 a browser as well, against a fake deployment rather than the real one, or the
 check writes the rows it is trying to prove absent.
 
+## Who can write a list
+
+Nobody signs in. A list's id is its only guard: `getList` and `updateList` are
+public and take no identity, which is what the README promises (anyone with the
+link can edit). Three things follow from that:
+
+- `convex/listRules.ts` checks every stored field before `createList` or
+  `updateList` writes: id and color patterns, lengths, item count. It is the only
+  server gate, and `tests/list-rules.test.mjs` pins it in both directions.
+- `js/render.js` escapes every value it interpolates and reduces a color to a hex
+  color (`safeColor` in `js/utils.js`) before it reaches a style attribute,
+  because a row can hold anything written before the rules existed.
+- `lists:deleteList` and `migrate:findListsToMigrate` are internal. The first let
+  any link holder delete a list, with no page that calls it; the second returned
+  every list id, which is every edit link.
+
+Who may update or delete a list (a per-list edit token, or sign-in through the
+Auth Kit) is an owner decision that has not been made, not an oversight.
+
 ## Still open
 
 The empty lists that earlier visits already inserted are still in the deployment
 and need a sweep. That is a production write, so it belongs to the owner.
+
+A row written before `convex/listRules.ts` existed that fails it (a non-hex color,
+an id with markup in it) renders safely but cannot be saved again until the
+offending item is removed. Every id and color generator in this repo's history
+passes, so only hand-written rows should be affected.

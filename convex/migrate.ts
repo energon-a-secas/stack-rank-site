@@ -1,15 +1,19 @@
 // Migration script to update old priority values (P0, P1, P2) to new system (P1-P6)
-import { query, internalMutation } from "./_generated/server";
+import { internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Query to find all lists with old priority values
-export const findListsToMigrate = query({
+// Query to find all lists with old priority values.
+//
+// Internal: it returns every list id, and a list id is the only thing that
+// guards a list, so as a public query it handed anyone the edit link to every
+// list in the deployment. It still runs from the dashboard or the CLI.
+export const findListsToMigrate = internalQuery({
   handler: async (ctx) => {
     const lists = await ctx.db.query("lists").collect();
 
     const listsToMigrate = lists.filter(list => {
       return list.items.some(item =>
-        item.priority === "P0" ||
+        (item.priority as string) === "P0" ||
         (item.priority === "P1" || item.priority === "P2")
       );
     });
@@ -47,7 +51,7 @@ export const migrateListPriorities = internalMutation({
       let newPriority = item.priority;
 
       // Map old priorities to new ones
-      if (item.priority === "P0") newPriority = "P1"; // High -> Critical
+      if ((item.priority as string) === "P0") newPriority = "P1"; // High -> Critical
       if (item.priority === "P1") newPriority = "P3"; // Medium -> Medium
       if (item.priority === "P2") newPriority = "P5"; // Low -> Low
 

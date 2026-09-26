@@ -100,7 +100,7 @@ stack-rank-site/
 
 The Convex backend stores list data with:
 - **Schema**: `lists` table with `listId` (unique string), `title`, `items` array, and timestamps
-- **Functions**: `getList`, `createList`, `updateList`, `deleteList`
+- **Functions**: `getList`, `createList`, `updateList` (public, every stored field validated by `convex/listRules.ts`); `deleteList` is internal
 - **No auth**: Lists are public but unguessable (random 10-char IDs)
 
 ---
