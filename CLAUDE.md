@@ -80,6 +80,13 @@ Every page GitHub Pages serves carries a strict `<meta http-equiv="Content-Secur
 `'unsafe-inline'`, so if an escaping bug returns to `js/render.js`, an injected
 handler or `<script>` still does not run. It is the second layer, not the fix.
 
+- **No Markdown is published.** Pages runs Jekyll, which by default renders every
+  tracked `.md` into a same-origin HTML page with theme scripts and no policy
+  (`/CLAUDE.html`, `/docs/DEPLOY.html`). `_config.yml` excludes every Markdown
+  extension and `docs/`. A new `.html` page, or a file with `---` front matter outside
+  `docs/`, needs its own policy or its own exclude entry. Keep `_config.yml`
+  rather than switching to `.nojekyll`, which would publish `.claude/` and
+  `_redirects`.
 - **`index.html` allows three inline scripts by sha256**: the header kit's theme
   guard, the `window.CONVEX_URL` line and the module that imports the Convex
   client. Any edit to one, whitespace included, blocks it until the hash is

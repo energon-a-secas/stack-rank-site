@@ -1,0 +1,26 @@
+# GitHub Pages builds this repo with Jekyll. With no config, Jekyll turns every
+# tracked Markdown file into a live page on this origin (/CLAUDE.html,
+# /docs/DEPLOY.html, /docs/AGENTS.html) that runs the default theme's scripts
+# and carries no Content-Security-Policy, beside an app whose every page has
+# one. Excluding them keeps Jekyll's other filtering; a .nojekyll file would
+# also start serving the dot and underscore paths (.claude/, _redirects) that
+# Jekyll drops today.
+#
+# Jekyll 3, which Pages runs, replaces its default exclude list with this one,
+# and Pages only adds CNAME to the default list. So CNAME and the Jekyll
+# defaults are repeated here to keep the output otherwise unchanged.
+exclude:
+  - "*.md"
+  - "*.markdown"
+  - "*.mkdown"
+  - "*.mkdn"
+  - "*.mkd"
+  - docs
+  - CNAME
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
