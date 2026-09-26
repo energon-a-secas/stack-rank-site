@@ -2,7 +2,7 @@
 // All functions that create or update DOM elements.
 
 import { state, persistList } from './state.js';
-import { escHtml, formatTimestamp } from './utils.js';
+import { escHtml, formatTimestamp, safeColor } from './utils.js';
 
 let sortableInstance = null;
 
@@ -68,8 +68,14 @@ function renderItemCard(item, index) {
 
   const priorityClass = (item.priority || 'P3').toLowerCase();
 
+  // Every value below comes from the Convex row (or an imported backup), which
+  // anyone holding the link can write, so each one is escaped where it lands.
+  // The color is also reduced to a hex color first: a style attribute is not a
+  // place where escaping alone makes a value safe.
+  const id = escHtml(item.id);
+
   return `
-    <div class="item-card${blockedClass}" data-id="${item.id}" data-index="${index}" style="--item-color: ${item.color};">
+    <div class="item-card${blockedClass}" data-id="${id}" data-index="${index}" style="--item-color: ${escHtml(safeColor(item.color))};">
       <span class="drag-grip" title="Drag to reorder" aria-hidden="true">
         <svg viewBox="0 0 10 16" fill="currentColor">
           <circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/>
@@ -83,7 +89,7 @@ function renderItemCard(item, index) {
       <div class="item-body">
         <h3 class="item-text">${escHtml(item.text)}</h3>
         <div class="item-meta">
-          <span class="item-priority ${priorityClass}">${item.priority}</span>
+          <span class="item-priority ${escHtml(priorityClass)}">${escHtml(item.priority)}</span>
           ${rankDelta}
           ${item.tags.map(tag => `<span class="tag">${escHtml(tag)}</span>`).join('')}
         </div>
@@ -92,7 +98,7 @@ function renderItemCard(item, index) {
       </div>
       <div class="item-trail">
         <div class="item-actions-wrapper">
-          <button class="item-kebab-btn" title="Actions" data-id="${item.id}">
+          <button class="item-kebab-btn" title="Actions" data-id="${id}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="12" cy="5" r="2"/>
               <circle cx="12" cy="12" r="2"/>
@@ -100,26 +106,26 @@ function renderItemCard(item, index) {
             </svg>
           </button>
           <div class="item-actions-dropdown">
-            <button class="action-dropdown-item complete-item-btn" data-id="${item.id}">
+            <button class="action-dropdown-item complete-item-btn" data-id="${id}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
               </svg>
               <span>Complete</span>
             </button>
-            <button class="action-dropdown-item block-item-btn" data-id="${item.id}">
+            <button class="action-dropdown-item block-item-btn" data-id="${id}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/>
               </svg>
               <span>${isBlocked ? 'Unblock' : 'Block'}</span>
             </button>
-            <button class="action-dropdown-item edit-item-btn" data-id="${item.id}">
+            <button class="action-dropdown-item edit-item-btn" data-id="${id}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
               </svg>
               <span>Edit</span>
             </button>
             <div class="action-dropdown-divider"></div>
-            <button class="action-dropdown-item action-dropdown-item--danger delete-item-btn" data-id="${item.id}">
+            <button class="action-dropdown-item action-dropdown-item--danger delete-item-btn" data-id="${id}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
               </svg>
@@ -158,9 +164,9 @@ function renderCompletedSection(completedItems) {
     </button>
     <div class="completed-list ${isCollapsed ? 'collapsed' : ''}">
       ${completedItems.map(item => `
-        <div class="completed-card" data-id="${item.id}" style="--card-color: ${item.color};">
+        <div class="completed-card" data-id="${escHtml(item.id)}" style="--card-color: ${escHtml(safeColor(item.color))};">
           <div class="completed-left">
-            <button class="uncomplete-item-btn" title="Restore" data-id="${item.id}">
+            <button class="uncomplete-item-btn" title="Restore" data-id="${escHtml(item.id)}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
               </svg>
@@ -169,8 +175,8 @@ function renderCompletedSection(completedItems) {
             <span class="completed-text">${escHtml(item.text)}</span>
           </div>
           <div class="completed-right">
-            <span class="completed-time">${formatTimestamp(item.completedAt)}</span>
-            <button class="delete-item-btn" title="Delete" data-id="${item.id}">
+            <span class="completed-time">${escHtml(formatTimestamp(item.completedAt))}</span>
+            <button class="delete-item-btn" title="Delete" data-id="${escHtml(item.id)}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
               </svg>
@@ -236,7 +242,10 @@ export function openItemModal(item = null) {
     document.getElementById('itemTags').value = item.tags.join(', ');
     document.getElementById('itemNotes').value = item.notes || '';
 
-    const colorOption = document.querySelector(`[data-color="${item.color}"]`);
+    // Matched by comparison, not by building a selector from the stored value,
+    // which a quote in it would break.
+    const colorOption = [...document.querySelectorAll('.color-option')]
+      .find(btn => btn.dataset.color === item.color);
     if (colorOption) {
       document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
       colorOption.classList.add('active');

@@ -4,7 +4,7 @@
 import { state, addItem, updateItem, updateTitle, loadTemplate, TEMPLATES } from './state.js';
 import { renderList, openItemModal, closeItemModal, openTemplateModal, closeTemplateModal, closeBlockModal, getSelectedColor, renderUrlDisplay } from './render.js';
 import { saveToBackend } from './render.js';
-import { showToast, copyToClipboard } from './utils.js';
+import { showToast, copyToClipboard, isHexColor, isItemId } from './utils.js';
 
 export function init() {
   bindEvents();
@@ -230,6 +230,14 @@ async function handleImportFile(e) {
       // Check priority is valid
       if (!['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].includes(item.priority)) {
         throw new Error(`Invalid priority value: ${item.priority}`);
+      }
+      // The same rules the backend applies (convex/listRules.ts), checked here
+      // so a bad file is refused before it replaces the list on screen.
+      if (!isItemId(item.id)) {
+        throw new Error('Invalid item id in backup file');
+      }
+      if (!isHexColor(item.color)) {
+        throw new Error(`Invalid color value: ${item.color}`);
       }
     }
 

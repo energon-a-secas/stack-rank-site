@@ -27,6 +27,29 @@ export function showToast(msg) {
 }
 
 
+/**
+ * Item colors and ids arrive from the Convex row and from imported backups, and
+ * both are written into HTML attributes, the color into a style attribute. Only
+ * a hex color is treated as a color; anything else renders as the default
+ * swatch. convex/listRules.ts applies the same patterns on write.
+ */
+export const DEFAULT_COLOR = '#e06b2d';
+const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const ITEM_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+export function isHexColor(value) {
+  return typeof value === 'string' && HEX_COLOR.test(value);
+}
+
+export function safeColor(value) {
+  return isHexColor(value) ? value : DEFAULT_COLOR;
+}
+
+export function isItemId(value) {
+  return typeof value === 'string' && ITEM_ID.test(value);
+}
+
+
 /** Format a timestamp for display (e.g. "Apr 27, 2:35 PM"). */
 export function formatTimestamp(ts) {
   if (!ts) return '';
