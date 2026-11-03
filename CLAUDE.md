@@ -109,8 +109,57 @@ handler or `<script>` still does not run. It is the second layer, not the fix.
 
 ## Still open
 
-The empty lists that earlier visits already inserted are still in the deployment
-and need a sweep. That is a production write, so it belongs to the owner.
+**The orphan sweep is built and has not run.** The empty lists that bare visits
+inserted before the draft fix went live are still in the deployment. Deleting
+them writes to the data the live site reads, so running it is the owner's call.
+
+What it deletes is `isUntouchedOrphan` in `convex/sweepRules.ts`: the title is
+`New Priority List`, there are no items, `updatedAt === createdAt`, and
+`createdAt` is before `DRAFT_FIX_LIVE_AT` (1790852998000, 2026-10-01T11:09:58Z,
+when Pages started building bdd71d8, the first build to serve the fix in
+642c3ff). Anything a person touched is spared: a title, one item, any update at
+all (a list filled and then emptied by hand). The cutoff is not optional: since
+the fix, pressing Share on an untouched draft writes exactly the orphan shape,
+on purpose, so the functions refuse a later one. Pages caches for 600 s, so a
+stale tab may have inserted a few orphans in the minutes after the cutoff; they
+are left.
+
+Anyone holding the link to a swept row still gets the same page: a hash with no
+row opens an empty draft under the same id (see above), which is what the row
+showed, and only the toast changes ("New list ready"). So a pre-fix visitor who
+shared the empty list they landed on loses nothing.
+
+Run it from this directory, against the deployment in `.env.local`
+(`industrious-hare-401`, which the live site reads):
+
+```bash
+npx convex dev --once                                      # push convex/, see below
+npx convex run sweep:sweepOrphans '{"dryRun":true}'        # counts, writes nothing
+npx convex run sweep:sweepOrphans '{"dryRun":false}'       # deletes what it counted
+npx convex run sweep:sweepOrphans '{"dryRun":true}'        # orphans should be 0
+```
+
+- **Not `npx convex deploy`.** `.env.local` names a dev deployment, and the site
+  reads it; `deploy` targets the project's prod deployment instead. The push
+  ships everything in `convex/`, including the field rules and the internal
+  `deleteList` from f1abedd and 4e330e5 if they are not live yet.
+- Before the deleting run, check that `newest` in the dry run is before the
+  cutoff and open one `sample` id in the dashboard (it is the document `_id`,
+  not the `listId`, which is an edit link). `keptEmpty` counts the empty rows
+  the sweep spares, renamed or edited ones.
+- `dryRun` has no default. `before` can narrow the sweep to an earlier cutoff;
+  `pageSize` (default 100, at most 500) can be lowered if a page of very long
+  lists hits the per-transaction read limit.
+
+`tests/sweep.test.mjs` pins the predicate and the paging, and every clause and
+guard was mutated: all 18 mutants turn a test red. The functions were also run
+end to end on a local Convex backend with ten fake rows (the cached
+`convex-local-backend` on loopback, a scratch copy with no `.env.local`): the
+dry run counted 5 orphans of 8 rows scanned and deleted nothing, the real run at
+`pageSize: 2` deleted exactly those 5, the survivors were the item, renamed,
+emptied and two post-cutoff rows, and a later cutoff, a missing `dryRun` and
+`pageSize: 0` were refused. `convex/_generated/api.d.ts` was edited by hand to
+list the new modules, and codegen on that scratch push produced the same file.
 
 A row written before `convex/listRules.ts` existed that fails it (a non-hex color,
 an id with markup in it) renders safely but cannot be saved again until the

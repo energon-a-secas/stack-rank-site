@@ -8,8 +8,11 @@
  * @module
  */
 
+import type * as listRules from "../listRules.js";
 import type * as lists from "../lists.js";
 import type * as migrate from "../migrate.js";
+import type * as sweep from "../sweep.js";
+import type * as sweepRules from "../sweepRules.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +21,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  listRules: typeof listRules;
   lists: typeof lists;
   migrate: typeof migrate;
+  sweep: typeof sweep;
+  sweepRules: typeof sweepRules;
 }>;
 
 /**
