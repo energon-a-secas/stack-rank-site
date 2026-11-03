@@ -3,7 +3,9 @@
 // convex/sweep.ts deletes those rows; convex/sweepRules.ts decides which ones
 // they are. These tests pin that decision from both sides: the shape a bare
 // visit wrote is matched, and each thing that shows a person touched a row
-// (a title, an item, an update, a Share after the fix) spares it.
+// (a title, an item, an update) spares it. A row with the same shape from
+// after the cutoff is spared and counted as afterCutoff, because a Share made
+// on purpose and a row old code wrote look the same.
 //
 // sweepRules.ts imports only convex/values, so node runs it as it ships. The
 // Convex functions around it were run end to end on a local backend with fake
@@ -22,6 +24,7 @@ import {
   SAMPLE_SIZE,
   checkCutoff,
   checkPageSize,
+  hasUntouchedShape,
   isUntouchedOrphan,
   sweepAll,
   sweepPage,
@@ -70,8 +73,8 @@ async function rowThePageWrites(now, edit = () => {}) {
 }
 
 /**
- * An in-memory table read the way convex/sweep.ts reads it: oldest first,
- * bounded by the cutoff, a page at a time, with an opaque cursor.
+ * An in-memory table read the way convex/sweep.ts reads it: the whole table,
+ * oldest first, a page at a time, with an opaque cursor.
  */
 function fakeDb(rows, pageSize = 2) {
   const table = [...rows].sort((a, b) => a.createdAt - b.createdAt);
@@ -79,9 +82,9 @@ function fakeDb(rows, pageSize = 2) {
   return {
     calls,
     table,
-    async page(before, cursor) {
+    async page(cursor) {
       calls.pages++;
-      const visible = table.filter((r) => r.createdAt < before && !calls.removed.includes(r._id));
+      const visible = table.filter((r) => !calls.removed.includes(r._id));
       const start = cursor === null ? 0 : visible.findIndex((r) => r.createdAt > Number(cursor));
       const from = start === -1 ? visible.length : start;
       const page = visible.slice(from, from + pageSize);
@@ -116,13 +119,19 @@ test('the default title is the one the page gives a new list', () => {
 test('an untouched row from before the fix is an orphan', async () => {
   assert.equal(isUntouchedOrphan(row()), true);
   assert.equal(isUntouchedOrphan(row({ createdAt: DRAFT_FIX_LIVE_AT - 1 })), true);
-  // The shape the pre-fix page wrote on a bare visit, end to end.
+  // What today's page sends for an untouched list, through createNewList and
+  // persistList, stamped before the cutoff. The pre-fix bare visit sent this
+  // same payload from its own createNewList (git show 642c3ff^:js/state.js),
+  // so this ties the predicate to the page's title and empty items; it does
+  // not run the pre-fix code itself.
   assert.equal(isUntouchedOrphan(await rowThePageWrites(DRAFT_FIX_LIVE_AT - DAY)), true);
 });
 
 test('a Share on an untouched draft after the fix is spared', async () => {
-  // Since the fix, pressing Share is the one thing that writes an empty,
-  // never-updated row with the default title. That list was shared on purpose.
+  // Since the fix, pressing Share on an untouched draft writes an empty,
+  // never-updated row with the default title, on purpose. Old code still
+  // running somewhere would write the same row, and nothing tells them apart,
+  // so everything with this shape after the cutoff is spared.
   const shared = await rowThePageWrites(DRAFT_FIX_LIVE_AT + HOUR);
   assert.equal(shared.title, DEFAULT_TITLE);
   assert.deepEqual(shared.items, []);
@@ -153,6 +162,16 @@ test('an earlier cutoff narrows the predicate', () => {
   const r = row({ createdAt: DRAFT_FIX_LIVE_AT - DAY });
   assert.equal(isUntouchedOrphan(r, DRAFT_FIX_LIVE_AT - 2 * DAY), false);
   assert.equal(isUntouchedOrphan(r, DRAFT_FIX_LIVE_AT - DAY + 1), true);
+});
+
+test('the untouched shape ignores the date, and the orphan predicate adds it', () => {
+  for (const createdAt of [DRAFT_FIX_LIVE_AT - DAY, DRAFT_FIX_LIVE_AT, DRAFT_FIX_LIVE_AT + 30 * DAY]) {
+    assert.equal(hasUntouchedShape(row({ createdAt })), true);
+  }
+  assert.equal(hasUntouchedShape(row({ title: 'Groceries' })), false);
+  assert.equal(hasUntouchedShape(row({ items: [item] })), false);
+  const createdAt = DRAFT_FIX_LIVE_AT + DAY;
+  assert.equal(hasUntouchedShape(row({ createdAt, updatedAt: createdAt + 1 })), false);
 });
 
 // ── Arguments ────────────────────────────────────────────────
@@ -191,9 +210,11 @@ test('a dry-run page counts and deletes nothing', async () => {
   const page = await sweepPage(db, { before: DRAFT_FIX_LIVE_AT, cursor: null, dryRun: true });
 
   assert.deepEqual(db.calls.removed, []);
-  assert.equal(page.scanned, 6, 'the row after the cutoff is outside the scan');
+  assert.equal(page.scanned, 7, 'the whole table, the row after the cutoff included');
   assert.equal(page.orphans, 3);
   assert.equal(page.keptEmpty, 2, 'the renamed and the emptied row');
+  assert.equal(page.afterCutoff, 1, 'the row shared after the cutoff');
+  assert.equal(page.afterCutoffNewest, DRAFT_FIX_LIVE_AT + 5000);
   assert.equal(page.deleted, 0);
   assert.deepEqual(page.sample.map((s) => s._id), ['orphan-a', 'orphan-b', 'orphan-c']);
   assert.equal(page.oldest, DRAFT_FIX_LIVE_AT - 200 * DAY);
@@ -208,6 +229,52 @@ test('a deleting page removes the orphans and nothing else', async () => {
   assert.deepEqual(db.calls.removed, ['orphan-a', 'orphan-b', 'orphan-c']);
   assert.equal(page.deleted, 3);
   assert.equal(page.orphans, 3);
+  assert.equal(page.afterCutoff, 1);
+});
+
+test('rows with the untouched shape after the cutoff are counted and never deleted', async () => {
+  const late = [
+    row({ _id: 'late-share', createdAt: DRAFT_FIX_LIVE_AT }),
+    row({ _id: 'late-old-code', createdAt: DRAFT_FIX_LIVE_AT + 20 * DAY }),
+    row({ _id: 'late-renamed', createdAt: DRAFT_FIX_LIVE_AT + 2 * DAY, title: 'Groceries' }),
+    row({ _id: 'late-item', createdAt: DRAFT_FIX_LIVE_AT + 3 * DAY, items: [item] }),
+  ];
+  const db = fakeDb([...mixed(), ...late], 100);
+  const page = await sweepPage(db, { before: DRAFT_FIX_LIVE_AT, cursor: null, dryRun: false });
+
+  assert.deepEqual(db.calls.removed, ['orphan-a', 'orphan-b', 'orphan-c']);
+  assert.equal(page.afterCutoff, 3, 'shared, late-share and late-old-code');
+  assert.equal(page.afterCutoffNewest, DRAFT_FIX_LIVE_AT + 20 * DAY);
+  assert.equal(page.keptEmpty, 3, 'renamed, emptied and late-renamed, none of them counted twice');
+  assert.equal(page.scanned, 11);
+});
+
+test('an earlier cutoff moves the untouched rows after it into afterCutoff', async () => {
+  const page = await sweepPage(fakeDb(mixed(), 100), {
+    before: DRAFT_FIX_LIVE_AT - 5 * DAY, cursor: null, dryRun: true,
+  });
+  assert.equal(page.orphans, 2, 'orphan-a and orphan-b');
+  assert.equal(page.afterCutoff, 2, 'orphan-c and shared');
+});
+
+test('old code writing after the cutoff shows up between two dry runs', async () => {
+  // What the owner checks: run the dry run twice, some days apart. If the
+  // fixed page is the only writer, afterCutoff moves only when someone
+  // shares an untouched list. A copy of the pre-fix page still running would
+  // add a row on every bare render, and the sweep cannot take those.
+  const rows = mixed();
+  const dry = async () => sweepAll(
+    (cursor) => sweepPage(fakeDb(rows, 2), { before: DRAFT_FIX_LIVE_AT, cursor, dryRun: true }),
+    { before: DRAFT_FIX_LIVE_AT, dryRun: true },
+  );
+  const first = await dry();
+  rows.push(row({ _id: 'bare-render-1', createdAt: DRAFT_FIX_LIVE_AT + 30 * DAY }));
+  rows.push(row({ _id: 'bare-render-2', createdAt: DRAFT_FIX_LIVE_AT + 31 * DAY }));
+  const second = await dry();
+
+  assert.equal(second.orphans, first.orphans, 'the sweep does not grow to take them');
+  assert.equal(second.afterCutoff, first.afterCutoff + 2);
+  assert.equal(second.afterCutoffNewest, new Date(DRAFT_FIX_LIVE_AT + 31 * DAY).toISOString());
 });
 
 test('a page refuses a late cutoff before it reads anything', async () => {
@@ -226,15 +293,44 @@ test('the sweep pages to the end and adds the pages up', async () => {
     { before: DRAFT_FIX_LIVE_AT, dryRun: false },
   );
 
-  assert.equal(totals.pages, 3);
-  assert.equal(totals.scanned, 6);
+  assert.equal(totals.pages, 4);
+  assert.equal(totals.scanned, 7);
   assert.equal(totals.orphans, 3);
   assert.equal(totals.deleted, 3);
   assert.equal(totals.keptEmpty, 2);
+  assert.equal(totals.afterCutoff, 1);
+  assert.equal(totals.afterCutoffNewest, new Date(DRAFT_FIX_LIVE_AT + 5000).toISOString());
   assert.equal(totals.before, '2026-10-01T11:09:58.000Z');
   assert.equal(totals.oldest, new Date(DRAFT_FIX_LIVE_AT - 200 * DAY).toISOString());
   assert.equal(totals.newest, new Date(DRAFT_FIX_LIVE_AT - 1000).toISOString());
   assert.deepEqual(db.calls.removed.sort(), ['orphan-a', 'orphan-b', 'orphan-c']);
+});
+
+test('the totals add afterCutoff across pages and keep its newest', async () => {
+  const rows = [
+    row({ _id: 'o1', createdAt: DRAFT_FIX_LIVE_AT - DAY }),
+    row({ _id: 'l1', createdAt: DRAFT_FIX_LIVE_AT + 9 * DAY }),
+    row({ _id: 'l2', createdAt: DRAFT_FIX_LIVE_AT + DAY }),
+    row({ _id: 'l3', createdAt: DRAFT_FIX_LIVE_AT + 4 * DAY }),
+  ];
+  const db = fakeDb(rows, 1);
+  const totals = await sweepAll(
+    (cursor) => sweepPage(db, { before: DRAFT_FIX_LIVE_AT, cursor, dryRun: true }),
+    { before: DRAFT_FIX_LIVE_AT, dryRun: true },
+  );
+  assert.equal(totals.pages, 4);
+  assert.equal(totals.afterCutoff, 3);
+  assert.equal(totals.afterCutoffNewest, new Date(DRAFT_FIX_LIVE_AT + 9 * DAY).toISOString());
+  assert.equal(totals.newest, new Date(DRAFT_FIX_LIVE_AT - DAY).toISOString(), 'newest is the orphans only');
+});
+
+test('with nothing after the cutoff, afterCutoffNewest is null', async () => {
+  const totals = await sweepAll(
+    (cursor) => sweepPage(fakeDb([row()], 2), { before: DRAFT_FIX_LIVE_AT, cursor, dryRun: true }),
+    { before: DRAFT_FIX_LIVE_AT, dryRun: true },
+  );
+  assert.equal(totals.afterCutoff, 0);
+  assert.equal(totals.afterCutoffNewest, null);
 });
 
 test('a dry run over the whole table writes nothing', async () => {
@@ -271,8 +367,8 @@ test('a page that does not move the cursor stops the sweep', async () => {
     // Without the check the sweep would loop forever; fail instead of hanging.
     if (++calls > 5) throw new Error('the sweep kept asking for the same page');
     return {
-      scanned: 0, orphans: 0, keptEmpty: 0, deleted: 0, sample: [],
-      oldest: null, newest: null, cursor: cursor ?? 'c0', isDone: false,
+      scanned: 0, orphans: 0, keptEmpty: 0, afterCutoff: 0, afterCutoffNewest: null,
+      deleted: 0, sample: [], oldest: null, newest: null, cursor: cursor ?? 'c0', isDone: false,
     };
   };
   await refusesAsync(() => sweepAll(stuck, { before: DRAFT_FIX_LIVE_AT, dryRun: true }));
